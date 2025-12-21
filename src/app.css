@@ -29,6 +29,45 @@ body {
   max-width: 980px;
   margin: 0 auto;
 }
+
+.hero__meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0 18px;
+}
+
+.pill {
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.18);
+  padding: 8px 10px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.link {
+  display: inline-block;
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mapWrap {
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  margin-top: 10px;
+}
+
+.mapPlaceholder {
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  margin-top: 10px;
+}
+
 .eyebrow {
   letter-spacing: 0.16em;
   text-transform: uppercase;
