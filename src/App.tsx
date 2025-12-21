@@ -82,14 +82,15 @@ export default function App() {
     // 3) Fyll i GOOGLE_FORM_ACTION och entry.X nedan
     const enableGoogleForm = false;
 
-    const GOOGLE_FORM_ACTION = 'PASTE_GOOGLE_FORM_ACTION_URL_HERE';
+    const GOOGLE_FORM_ACTION =
+      'https://docs.google.com/forms/d/e/1FAIpQLSdsXv5hBd9mGLxadeNbuvAqMdFWqXiBglw1VhqsjXPn9p3Sdg/formResponse';
 
     const ENTRY = {
-      name: 'entry.1111111111',
-      email: 'entry.2222222222',
-      attending: 'entry.3333333333',
-      allergies: 'entry.4444444444',
-      foodPrefs: 'entry.5555555555',
+      name: 'entry.372731744',
+      email: '',
+      attending: 'entry.2000885047',
+      allergies: 'entry.207181512',
+      foodPrefs: 'entry.725319113',
       speech: 'entry.6666666666',
       speechDetails: 'entry.7777777777',
     };
