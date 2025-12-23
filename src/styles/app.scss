@@ -40,6 +40,11 @@ body {
 .hero {
   padding: 56px 20px 32px;
   text-align: center;
+  min-height: 20vh;
+
+  &__header {
+    min-height: 20dvh;
+  }
 
   &__inner {
     max-width: 720px;
@@ -72,15 +77,6 @@ body {
 
   &__illustration {
     margin: 28px auto 32px;
-    max-width: 260px;
-    aspect-ratio: 408 / 700;
-    border-radius: 999px;
-    border: 1px solid var(--accent);
-    padding: 18px 18px 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.7);
 
     img,
     svg {

@@ -8,16 +8,16 @@ type HeroProps = {
 export function Hero({ wedding }: HeroProps) {
   return (
     <header className="hero">
-      <div className="hero__inner">
-        <p className="eyebrow">Save the date</p>
+      {/* <p className="eyebrow"></p> */}
+      <div className="hero__header">
         <h1>{wedding.couple}</h1>
         <p className="lead">{wedding.dateLong}</p>
-
         <div className="hero__illustration">
           {/* Lägg bilden i public/ enligt filnamnet nedan */}
           <img src={weddingPhoto} alt={wedding.couple} />
         </div>
-
+      </div>
+      <div className="hero__inner">
         <div className="hero__cards">
           <div className="card">
             <h3>Vigsel</h3>
