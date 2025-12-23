@@ -75,17 +75,6 @@ body {
     margin: 0;
   }
 
-  &__illustration {
-    margin: 28px auto 32px;
-
-    img,
-    svg {
-      display: block;
-      max-width: 100%;
-      height: auto;
-    }
-  }
-
   &__cards {
     display: grid;
     gap: 14px;

@@ -1,5 +1,4 @@
 import type { WeddingConfig } from '../weddingConfig';
-import weddingPhoto from '../assets/hannes-julia-illustration.png';
 
 type HeroProps = {
   wedding: WeddingConfig;
@@ -12,10 +11,6 @@ export function Hero({ wedding }: HeroProps) {
       <div className="hero__header">
         <h1>{wedding.couple}</h1>
         <p className="lead">{wedding.dateLong}</p>
-        <div className="hero__illustration">
-          {/* Lägg bilden i public/ enligt filnamnet nedan */}
-          <img src={weddingPhoto} alt={wedding.couple} />
-        </div>
       </div>
       <div className="hero__inner">
         <div className="hero__cards">
