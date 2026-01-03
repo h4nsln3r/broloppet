@@ -4,9 +4,8 @@
   isolation: isolate;
   overflow: hidden;
 
-  // riktig hero-höjd så parallax känns
   min-height: 75vh;
-  padding: 32px 20px 32px;
+  padding: 0px 20px 32px;
   text-align: center;
 
   display: flex;
@@ -44,11 +43,7 @@
 
     background:
       // lite “soft” runt rubriken men fortfarande klart
-      radial-gradient(
-        900px 420px at 50% 16%,
-        rgba(248, 240, 227, 0.08),
-        rgba(248, 240, 227, 0) 55%
-      ),
+      radial-gradient(900px 420px at 50% 16%, rgba(248, 240, 227, 0.08), rgba(248, 240, 227, 0) 55%),
       // huvudfade: nästan transparent i toppen -> tydligare mot botten
       linear-gradient(
           to bottom,
@@ -61,7 +56,7 @@
   }
 
   h1 {
-    font-family: "Playfair Display", "Times New Roman", serif;
+    font-family: 'Playfair Display', 'Times New Roman', serif;
     font-weight: 500;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -72,7 +67,7 @@
   }
 
   .lead {
-    font-family: "Playfair Display", "Times New Roman", serif;
+    font-family: 'Playfair Display', 'Times New Roman', serif;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     font-size: 1.2rem;

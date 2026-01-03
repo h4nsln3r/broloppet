@@ -1,0 +1,34 @@
+@use '../../styles/variables' as *;
+
+.card {
+  background: rgba(255, 255, 255, 0.86);
+  border-radius: $radius-card;
+  border: 1px solid rgba(219, 200, 181, 0.9);
+  padding: 18px 18px 20px;
+  box-shadow: $shadow-soft;
+  backdrop-filter: blur(6px);
+
+  &--meta {
+    display: grid;
+    gap: 10px;
+  }
+
+  .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-family: $font-heading;
+    color: var(--muted);
+  }
+
+  &__meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+
+    span:last-child {
+      font-weight: 500;
+    }
+  }
+}

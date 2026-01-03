@@ -1,14 +1,4 @@
-// Färger hämtade från inbjudan
-$bg-color: #f8f0e3;
-$accent: #b8ab9b;
-$text-color: #2f2620;
-$muted-color: rgba(47, 38, 32, 0.65);
-
-$radius-card: 20px;
-$shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.08);
-
-$font-heading: "Playfair Display", "Times New Roman", serif;
-$font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+@use './variables' as *;
 
 :root {
   --bg: #{$bg-color};
@@ -42,33 +32,6 @@ body {
   padding: 0 20px 40px;
 }
 
-.section {
-  max-width: 960px;
-  margin: 0 auto 40px;
-
-  &:last-of-type {
-    margin-bottom: 60px;
-  }
-
-  h2 {
-    font-family: $font-heading;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    font-size: 0.95rem;
-    margin: 0 0 18px;
-  }
-
-  h3 {
-    font-family: $font-heading;
-    font-weight: 500;
-    font-size: 1rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin: 0 0 10px;
-  }
-}
-
 .muted {
   color: var(--muted);
 }
@@ -84,39 +47,6 @@ body {
   &.grid--info {
     @media (min-width: 820px) {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-}
-
-.card {
-  background: rgba(255, 255, 255, 0.86);
-  border-radius: $radius-card;
-  border: 1px solid rgba(219, 200, 181, 0.9);
-  padding: 18px 18px 20px;
-  box-shadow: $shadow-soft;
-  backdrop-filter: blur(6px);
-
-  &--meta {
-    display: grid;
-    gap: 10px;
-  }
-
-  .label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    font-family: $font-heading;
-    color: var(--muted);
-  }
-
-  &__meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-
-    span:last-child {
-      font-weight: 500;
     }
   }
 }
