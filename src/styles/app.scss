@@ -7,8 +7,8 @@ $muted-color: rgba(47, 38, 32, 0.65);
 $radius-card: 20px;
 $shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.08);
 
-$font-heading: 'Playfair Display', 'Times New Roman', serif;
-$font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-heading: "Playfair Display", "Times New Roman", serif;
+$font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
 :root {
   --bg: #{$bg-color};
@@ -35,54 +35,6 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.hero {
-  padding: 56px 20px 32px;
-  text-align: center;
-  min-height: 20vh;
-
-  &__header {
-    min-height: 20dvh;
-  }
-
-  &__inner {
-    max-width: 720px;
-    margin: 0 auto;
-  }
-
-  .eyebrow {
-    text-transform: uppercase;
-    letter-spacing: 0.22em;
-    font-size: 0.8rem;
-    margin: 0 0 10px;
-  }
-
-  h1 {
-    font-family: $font-heading;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-size: clamp(1.8rem, 4vw, 2.3rem);
-    margin: 0 0 4px;
-  }
-
-  .lead {
-    font-family: $font-heading;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-size: 0.9rem;
-    margin: 0;
-  }
-
-  &__cards {
-    display: grid;
-    gap: 14px;
-
-    @media (min-width: 800px) {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
 }
 
 .content {
@@ -137,11 +89,12 @@ body {
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.86);
   border-radius: $radius-card;
   border: 1px solid rgba(219, 200, 181, 0.9);
   padding: 18px 18px 20px;
   box-shadow: $shadow-soft;
+  backdrop-filter: blur(6px);
 
   &--meta {
     display: grid;

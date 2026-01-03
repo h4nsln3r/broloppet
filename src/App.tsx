@@ -1,7 +1,7 @@
-import './styles/app.scss';
-import { Hero } from './components/Hero';
-import { RsvpForm } from './components/RsvpForm';
-import { WEDDING } from './weddingConfig';
+import "./styles/app.scss";
+import { Hero } from "./components/Hero/Hero";
+import { RsvpForm } from "./components/RsvpForm";
+import { WEDDING } from "./weddingConfig";
 
 export default function App() {
   return (
@@ -59,7 +59,12 @@ export default function App() {
                 >
                   Hossmo kyrka – karta
                 </a>
-                <a className="link" href={WEDDING.maps.partyLink} target="_blank" rel="noreferrer">
+                <a
+                  className="link"
+                  href={WEDDING.maps.partyLink}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Hossmo gård – karta
                 </a>
               </div>
@@ -67,12 +72,14 @@ export default function App() {
           </div>
 
           <div className="mapSection">
-            {WEDDING.maps.embedSrc.includes('PASTE_') ? (
+            {WEDDING.maps.embedSrc.includes("PASTE_") ? (
               <div className="mapPlaceholder">
                 <p className="muted">
-                  Lägg in en Google Maps embed-URL i <code>WEDDING.maps.embedSrc</code>.
+                  Lägg in en Google Maps embed-URL i{" "}
+                  <code>WEDDING.maps.embedSrc</code>.
                   <br />
-                  (Google Maps → Dela → “Bädda in en karta” → kopiera <code>src</code>.)
+                  (Google Maps → Dela → “Bädda in en karta” → kopiera{" "}
+                  <code>src</code>.)
                 </p>
               </div>
             ) : (
@@ -102,7 +109,8 @@ export default function App() {
         <section className="section" id="rsvp">
           <h2>OSA / RSVP</h2>
           <p className="muted">
-            Svara om du kommer eller inte. Fyll gärna i allergier och önskemål kring mat.
+            Svara om du kommer eller inte. Fyll gärna i allergier och önskemål
+            kring mat.
           </p>
 
           <RsvpForm osaDeadline={WEDDING.osaDeadline} />

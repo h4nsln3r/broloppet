@@ -1,0 +1,83 @@
+/* HERO */
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  // riktig hero-höjd så parallax känns
+  min-height: 75vh;
+  padding: 32px 20px 32px;
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  // Parallax-container från react-scroll-parallax
+  .hero__parallax {
+    position: absolute !important;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+  }
+
+  // Själva bakgrundsbilden
+  .hero__bg {
+    position: absolute;
+    inset: -14% 0; // större så den kan röra sig utan vita kanter
+    background-size: cover;
+    background-position: center 100%;
+    background-repeat: no-repeat;
+
+    transform: scale(1);
+    filter: saturate(1) contrast(1);
+    will-change: transform;
+  }
+
+  // Fade overlay: tydlig upptill -> mer fade nedtill (smälter in)
+  .hero__fade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+
+    background:
+      // lite “soft” runt rubriken men fortfarande klart
+      radial-gradient(
+        900px 420px at 50% 16%,
+        rgba(248, 240, 227, 0.08),
+        rgba(248, 240, 227, 0) 55%
+      ),
+      // huvudfade: nästan transparent i toppen -> tydligare mot botten
+      linear-gradient(
+          to bottom,
+          rgba(248, 240, 227, 0.02) 0%,
+          rgba(248, 240, 227, 0.1) 28%,
+          rgba(248, 240, 227, 0.34) 55%,
+          rgba(248, 240, 227, 0.7) 82%,
+          rgba(248, 240, 227, 0.92) 100%
+        );
+  }
+
+  h1 {
+    font-family: "Playfair Display", "Times New Roman", serif;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: clamp(2.8rem, 4vw, 2.3rem);
+    margin: 0 0 4px;
+    text-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+    color: white;
+  }
+
+  .lead {
+    font-family: "Playfair Display", "Times New Roman", serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    margin: 0;
+    text-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    color: white;
+  }
+}
