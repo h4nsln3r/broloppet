@@ -1,13 +1,8 @@
 import { Parallax } from 'react-scroll-parallax';
-import type { WeddingConfig } from '../../weddingConfig';
 import heroImage from '../../assets/håj.jpg';
 import './hero.scss';
 
-type HeroProps = {
-  wedding: WeddingConfig;
-};
-
-export function Hero({ wedding }: HeroProps) {
+export function Hero() {
   return (
     <header className="hero">
       <Parallax speed={-50} className="hero__parallax" aria-hidden="true">
