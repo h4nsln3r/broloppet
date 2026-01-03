@@ -1,6 +1,5 @@
 import './styles/app.scss';
 import { Hero } from './components/Hero/Hero';
-import { RsvpForm } from './components/Form/RsvpForm';
 import { WEDDING } from './weddingConfig';
 import { Information } from './components/Section/Info';
 import { ToastMasters } from './components/Section/Toast';
