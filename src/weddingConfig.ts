@@ -4,7 +4,7 @@ export const WEDDING = {
   dateLong: 'Fredag 29 augusti 2026',
   ceremony: {
     place: 'Hossmo kyrka',
-    time: '15:00',
+    time: '14:00',
   },
   party: {
     place: 'Hossmo gård',
@@ -30,7 +30,7 @@ export const WEDDING = {
     ceremonyLink: 'https://maps.google.com/?q=Hossmo+kyrka',
     partyLink: 'https://maps.google.com/?q=Hossmo+g%C3%A5rd',
     // Embed: i Google Maps -> Dela -> “Bädda in en karta” -> kopiera src-URL
-    embedSrc: 'PASTE_GOOGLE_MAPS_EMBED_SRC_HERE',
+    embedSrc: 'https://www.google.com/maps?q=Hossmo%20G%C3%A5rd%2C%20Kalmar&output=embed',
   },
 } as const;
 

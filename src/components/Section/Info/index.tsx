@@ -1,22 +1,100 @@
 import { WEDDING } from '../../../weddingConfig';
+import { FiClock } from 'react-icons/fi';
+import hossmoKA from '../../../assets/hossmoka.jpg';
 
 import '../section.scss';
+import './info-section.scss';
 
 export function Information() {
   return (
     <section className="section">
       <h2>Information</h2>
 
-      <div className="grid">
-        <div className="card">
-          <h3>Tider</h3>
+      <div className="grid grid--times">
+        <div className="card times-card">
+          <h3>
+            <span className="icon" aria-hidden="true">
+              <FiClock size={18} />
+            </span>
+            Tider
+          </h3>
           <ul>
-            <li>Vigsel startar: {WEDDING.ceremony.time}</li>
-            <li>Middag & fest: {WEDDING.party.time}</li>
-            <li>Festen slutar: {WEDDING.party.ends}</li>
+            <li className="time-row">
+              <div className="time-col">
+                <span className="time-text">{WEDDING.ceremony.time} — Vigsel</span>
+                <span className="place-text muted">{WEDDING.ceremony.place}</span>
+              </div>
+              {/* <div className="church-col">
+                <span className="church-icon" aria-hidden="true" title={WEDDING.ceremony.place}>
+                  <img src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
+                </span>
+              </div> */}
+            </li>
+          </ul>
+
+          <img style={{ height: '256px' }} src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
+          <ul>
+            <li className="time-row">
+              <div className="time-col">
+                <span className="time-text">15:00 - Promenad till Hossmo Gård</span>
+              </div>
+              {/* <div className="church-col">
+                <span className="church-icon" aria-hidden="true" title={WEDDING.ceremony.place}>
+                  <img src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
+                </span>
+              </div> */}
+            </li>
+            <li className="time-row">
+              <div className="time-col">
+                <span className="time-text">18:00 — Middag</span>
+                <span className="place-text muted">{WEDDING.party.place}</span>
+              </div>
+              {/* <div className="church-col">
+                <span className="church-icon" aria-hidden="true" title={WEDDING.ceremony.place}>
+                  <img src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
+                </span>
+              </div> */}
+            </li>
+            <li className="time-row">
+              <div className="time-col">
+                <span className="time-text">22:00 — Fest</span>
+                <span className="place-text muted">{WEDDING.party.place}</span>
+              </div>
+              {/* <div className="church-col">
+                <span className="church-icon" aria-hidden="true" title={WEDDING.ceremony.place}>
+                  <img src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
+                </span>
+              </div> */}
+            </li>
           </ul>
         </div>
 
+        {WEDDING.maps.embedSrc.includes('PASTE_') ? (
+          <div className="card map-card">
+            <div className="mapPlaceholder">
+              <p className="muted">
+                Lägg in en Google Maps embed-URL i <code>WEDDING.maps.embedSrc</code>.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="card map-card">
+            <div className="mapWrap">
+              <iframe
+                src={WEDDING.maps.embedSrc}
+                width="100%"
+                height="100%"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Karta"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+      <br />
+
+      <div className="grid">
         <div className="card">
           <h3>Klädkod</h3>
           <p>{WEDDING.dressCode}</p>
@@ -54,29 +132,6 @@ export function Information() {
             </a>
           </div>
         </div>
-      </div>
-
-      <div className="mapSection">
-        {WEDDING.maps.embedSrc.includes('PASTE_') ? (
-          <div className="mapPlaceholder">
-            <p className="muted">
-              Lägg in en Google Maps embed-URL i <code>WEDDING.maps.embedSrc</code>.
-              <br />
-              (Google Maps → Dela → “Bädda in en karta” → kopiera <code>src</code>.)
-            </p>
-          </div>
-        ) : (
-          <div className="mapWrap">
-            <iframe
-              src={WEDDING.maps.embedSrc}
-              width="100%"
-              height="360"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Karta"
-            />
-          </div>
-        )}
       </div>
     </section>
   );
