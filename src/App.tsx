@@ -1,9 +1,9 @@
-import './styles/app.scss';
-import { Hero } from './components/Hero/Hero';
-import { WEDDING } from './weddingConfig';
-import { Information } from './components/Section/Info';
-import { ToastMasters } from './components/Section/Toast';
-import { RSVP } from './components/Section/RSVP';
+import "./styles/app.scss";
+import { Hero } from "./components/Hero/Hero";
+import { WEDDING } from "./weddingConfig";
+import { Information } from "./components/Section/Info";
+import { ToastMasters } from "./components/Section/Toast";
+import { RSVP } from "./components/Section/RSVP";
 
 export default function App() {
   return (
@@ -11,6 +11,7 @@ export default function App() {
       <Hero wedding={WEDDING} />
 
       <main className="content">
+        <p>Välkommen till Hannes och Julias bröllop!</p>
         <Information />
 
         <ToastMasters />

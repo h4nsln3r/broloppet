@@ -99,7 +99,8 @@ export function Information() {
             <li className="time-row">
               <div className="time-col">
                 <span className="">
-                  Efter vigseln fortsätter bröllopsfesten på Hossmo gård.
+                  Efter vigseln fortsätter bröllopsfesten på Hossmo gård. Gång
+                  från kyrkan.
                 </span>
               </div>
             </li>
