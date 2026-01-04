@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { WEDDING } from '../../../weddingConfig';
 import { FiClock } from 'react-icons/fi';
 import hossmoKA from '../../../assets/hossmoka.jpg';
@@ -23,6 +24,32 @@ function addQueryParam(url: string, key: string, value: string) {
 }
 
 export function Information() {
+  const defaultEmbed = addQueryParam(WEDDING.maps.embedSrc, 't', 'k');
+  const ceremonyEmbed = addQueryParam(
+    addQueryParam(WEDDING.maps.ceremonyLink, 'output', 'embed'),
+    't',
+    'k'
+  );
+  const partyEmbed = addQueryParam(
+    addQueryParam(WEDDING.maps.partyLink, 'output', 'embed'),
+    't',
+    'k'
+  );
+
+  const [activeMap, setActiveMap] = useState<'default' | 'ceremony' | 'party'>(() => {
+    // default to party if embedSrc already points there
+    if (
+      WEDDING.maps.embedSrc.includes('G%C3%A5rd') ||
+      WEDDING.maps.embedSrc.includes('Gard') ||
+      WEDDING.maps.embedSrc.includes('Gård')
+    )
+      return 'party';
+    return 'default';
+  });
+
+  const mapSrc =
+    activeMap === 'ceremony' ? ceremonyEmbed : activeMap === 'party' ? partyEmbed : defaultEmbed;
+
   return (
     <section className="section">
       <h2>Information</h2>
@@ -39,7 +66,17 @@ export function Information() {
             <li className="time-row">
               <div className="time-col">
                 <span className="time-text">{WEDDING.ceremony.time} — Vigsel</span>
-                <span className="place-text muted">{WEDDING.ceremony.place}</span>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className={`place-text muted ${activeMap === 'ceremony' ? 'active' : ''}`}
+                  onClick={() => setActiveMap('ceremony')}
+                  onKeyDown={(e) =>
+                    (e.key === 'Enter' || e.key === ' ') && setActiveMap('ceremony')
+                  }
+                >
+                  {WEDDING.ceremony.place}
+                </span>
               </div>
             </li>
           </ul>
@@ -55,13 +92,29 @@ export function Information() {
             <li className="time-row">
               <div className="time-col">
                 <span className="time-text">18:00 — Middag</span>
-                <span className="place-text muted">{WEDDING.party.place}</span>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className={`place-text muted ${activeMap === 'party' ? 'active' : ''}`}
+                  onClick={() => setActiveMap('party')}
+                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveMap('party')}
+                >
+                  {WEDDING.party.place}
+                </span>
               </div>
             </li>
             <li className="time-row">
               <div className="time-col">
                 <span className="time-text">22:00 — Fest</span>
-                <span className="place-text muted">{WEDDING.party.place}</span>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className={`place-text muted ${activeMap === 'party' ? 'active' : ''}`}
+                  onClick={() => setActiveMap('party')}
+                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveMap('party')}
+                >
+                  {WEDDING.party.place}
+                </span>
               </div>
             </li>
           </ul>
@@ -76,16 +129,18 @@ export function Information() {
             </div>
           </div>
         ) : (
-          <div className="mapWrap">
-            <iframe
-              src={addQueryParam(WEDDING.maps.embedSrc, 't', 'k')}
-              width="100%"
-              height="100%"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Karta"
-            />
-          </div>
+          <>
+            <div className="mapWrap">
+              <iframe
+                src={mapSrc}
+                width="100%"
+                height="100%"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Karta"
+              />
+            </div>
+          </>
         )}
       </div>
       <br />
