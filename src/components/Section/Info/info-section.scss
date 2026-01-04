@@ -1,5 +1,5 @@
-@use '../../../styles/variables' as *;
-@use 'sass:color' as color;
+@use "../../../styles/variables" as *;
+@use "sass:color" as color;
 
 .grid--times {
   display: grid;
@@ -58,6 +58,10 @@
         .place-text {
           font-size: 0.95rem;
           color: var(--muted);
+          &:hover {
+            text-decoration: underline;
+            cursor: pointer;
+          }
         }
       }
     }
@@ -103,39 +107,38 @@
       }
     }
 
-.map-controls {
-  display: flex;
-  gap: 8px;
-  padding: 8px 6px;
-  margin-top: 8px;
+    .map-controls {
+      display: flex;
+      gap: 8px;
+      padding: 8px 6px;
+      margin-top: 8px;
 
-  button {
-    border: 1px solid rgba(199, 178, 158, 0.9);
-    background: transparent;
-    padding: 8px 10px;
-    border-radius: 999px;
-    cursor: pointer;
-    font-size: 0.9rem;
-  }
+      button {
+        border: 1px solid rgba(199, 178, 158, 0.9);
+        background: transparent;
+        padding: 8px 10px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
 
-  button.active,
-  button[aria-pressed="true"] {
-    background: #fff;
-    border-color: transparent;
-    box-shadow: 0 1px 0 rgba(0,0,0,0.04);
-    font-weight: 600;
-  }
-}
+      button.active,
+      button[aria-pressed="true"] {
+        background: #fff;
+        border-color: transparent;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+        font-weight: 600;
+      }
+    }
 
-.place-text[role="button"] {
-  cursor: pointer;
-  text-decoration: underline;
-}
+    .place-text[role="button"] {
+      cursor: pointer;
+      text-decoration: underline;
+    }
 
-.place-text.active {
-  font-weight: 600;
-}
-
+    .place-text.active {
+      font-weight: 600;
+    }
   }
 }
 
