@@ -43,11 +43,12 @@ body {
 .grid {
   display: grid;
   gap: 14px;
+}
 
-  &.grid--info {
-    @media (min-width: 820px) {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
+.grid--info {
+  @media (min-width: 720px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
   }
 }
 
@@ -72,10 +73,6 @@ a.link {
   display: grid;
   gap: 6px;
   margin-top: 6px;
-}
-
-.mapSection {
-  margin-top: 24px;
 }
 
 .mapWrap {

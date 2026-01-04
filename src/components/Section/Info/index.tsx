@@ -5,6 +5,23 @@ import hossmoKA from '../../../assets/hossmoka.jpg';
 import '../section.scss';
 import './info-section.scss';
 
+function addQueryParam(url: string, key: string, value: string) {
+  // simple helper: append or replace param
+  try {
+    const u = new URL(url, 'https://example.com');
+    u.searchParams.set(key, value);
+    // If original URL was relative to root (maps embed), try to return with same origin
+    if (url.startsWith('http')) return u.toString();
+    // For embed URLs like 'https://www.google.com/maps?q=...&output=embed' URL() works fine
+    return u.toString();
+  } catch (e) {
+    // fallback: naive append
+    const sep = url.includes('?') ? '&' : '?';
+    console.log(e);
+    return url + sep + encodeURIComponent(key) + '=' + encodeURIComponent(value);
+  }
+}
+
 export function Information() {
   return (
     <section className="section">
@@ -24,47 +41,28 @@ export function Information() {
                 <span className="time-text">{WEDDING.ceremony.time} — Vigsel</span>
                 <span className="place-text muted">{WEDDING.ceremony.place}</span>
               </div>
-              {/* <div className="church-col">
-                <span className="church-icon" aria-hidden="true" title={WEDDING.ceremony.place}>
-                  <img src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
-                </span>
-              </div> */}
             </li>
           </ul>
 
-          <img style={{ height: '256px' }} src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
+          <img className="church-main" src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
+
           <ul>
             <li className="time-row">
               <div className="time-col">
                 <span className="time-text">15:00 - Promenad till Hossmo Gård</span>
               </div>
-              {/* <div className="church-col">
-                <span className="church-icon" aria-hidden="true" title={WEDDING.ceremony.place}>
-                  <img src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
-                </span>
-              </div> */}
             </li>
             <li className="time-row">
               <div className="time-col">
                 <span className="time-text">18:00 — Middag</span>
                 <span className="place-text muted">{WEDDING.party.place}</span>
               </div>
-              {/* <div className="church-col">
-                <span className="church-icon" aria-hidden="true" title={WEDDING.ceremony.place}>
-                  <img src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
-                </span>
-              </div> */}
             </li>
             <li className="time-row">
               <div className="time-col">
                 <span className="time-text">22:00 — Fest</span>
                 <span className="place-text muted">{WEDDING.party.place}</span>
               </div>
-              {/* <div className="church-col">
-                <span className="church-icon" aria-hidden="true" title={WEDDING.ceremony.place}>
-                  <img src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
-                </span>
-              </div> */}
             </li>
           </ul>
         </div>
@@ -78,59 +76,47 @@ export function Information() {
             </div>
           </div>
         ) : (
-          <div className="card map-card">
-            <div className="mapWrap">
-              <iframe
-                src={WEDDING.maps.embedSrc}
-                width="100%"
-                height="100%"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Karta"
-              />
-            </div>
+          <div className="mapWrap">
+            <iframe
+              src={addQueryParam(WEDDING.maps.embedSrc, 't', 'k')}
+              width="100%"
+              height="100%"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Karta"
+            />
           </div>
         )}
       </div>
       <br />
 
+      <div className="card card--info">
+        <div className="info-grid">
+          <div className="info-item">
+            <h4>Klädkod</h4>
+            <p>{WEDDING.dressCode}</p>
+          </div>
+
+          <div className="info-item">
+            <h4>Barn</h4>
+            <p>{WEDDING.childrenPolicy}</p>
+          </div>
+
+          <div className="info-item">
+            <h4>Presenter</h4>
+            <p>{WEDDING.gifts}</p>
+          </div>
+        </div>
+      </div>
+      <br />
       <div className="grid">
-        <div className="card">
-          <h3>Klädkod</h3>
-          <p>{WEDDING.dressCode}</p>
-        </div>
-
-        <div className="card">
-          <h3>Barn</h3>
-          <p>{WEDDING.childrenPolicy}</p>
-        </div>
-
-        <div className="card">
-          <h3>Presenter</h3>
-          <p>{WEDDING.gifts}</p>
-        </div>
-
-        <div className="card">
+        <div className="card transport-card">
           <h3>Transport & parkering</h3>
           <ul>
             {WEDDING.transport.map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>
-        </div>
-
-        <div className="card">
-          <h3>Platser</h3>
-          <p>{WEDDING.ceremony.place}</p>
-          <p>{WEDDING.party.place}</p>
-          <div className="links">
-            <a className="link" href={WEDDING.maps.ceremonyLink} target="_blank" rel="noreferrer">
-              Hossmo kyrka – karta
-            </a>
-            <a className="link" href={WEDDING.maps.partyLink} target="_blank" rel="noreferrer">
-              Hossmo gård – karta
-            </a>
-          </div>
         </div>
       </div>
     </section>

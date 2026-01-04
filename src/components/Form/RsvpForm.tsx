@@ -155,7 +155,7 @@ export function RsvpForm({ osaDeadline }: Props) {
         />
       </label>
 
-      <label>
+      {/* <label>
         Vill du hålla tal / göra något på festen?
         <div className="segmented">
           <button
@@ -185,7 +185,7 @@ export function RsvpForm({ osaDeadline }: Props) {
             rows={3}
           />
         </label>
-      )}
+      )} */}
 
       <div className="actions">
         <button className="submit" disabled={!canSubmit || status === 'sending'}>

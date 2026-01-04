@@ -59,76 +59,75 @@
           font-size: 0.95rem;
           color: var(--muted);
         }
-
-        .church-col {
-          display: flex;
-          align-items: center;
-          margin-left: auto;
-        }
-
-        .church-icon {
-          display: inline-block;
-          width: 196px;
-          height: 126px;
-          line-height: 0;
-          overflow: hidden;
-
-          img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 12px;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-            transition: transform 0.28s ease, filter 0.36s ease;
-            transform-origin: center;
-          }
-
-          &:hover img {
-            filter: brightness(1.08) saturate(1.06);
-            transform: scale(1.045);
-          }
-
-          @media (min-width: 720px) {
-            width: 100%;
-            height: 178px;
-
-            img {
-              border-radius: 14px;
-            }
-          }
-        }
       }
     }
 
     .muted {
       margin-top: 8px;
     }
+
+    .church-main {
+      display: block;
+      width: 100%;
+      max-width: 640px;
+      height: auto;
+      margin: 10px 0 10px;
+      border: 1px solid color.adjust($accent, $lightness: 6%);
+    }
   }
 
-  .map-card {
-    flex: 1 1 auto;
+  .grid--times {
+    @media (min-width: 720px) {
+      > .mapWrap {
+        flex: 1 1 auto;
+        min-height: 220px;
+        display: block;
+        overflow: hidden;
+      }
+    }
 
     .mapWrap {
-      flex: 1 1 auto;
-      min-height: 220px;
-      overflow: hidden;
-
       iframe {
         display: block;
         width: 100%;
         height: 100%;
         border: none;
       }
-    }
 
-    .mapPlaceholder {
-      padding: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 1 1 auto;
-      min-height: 220px;
+      &.mapPlaceholder {
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 220px;
+      }
     }
   }
+}
+
+.card--info {
+  .info-grid {
+    display: grid;
+    gap: 12px;
+
+    @media (min-width: 720px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    h4 {
+      margin: 0 0 6px;
+      font-size: 0.95rem;
+      font-family: $font-heading;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+.transport-card {
+  margin-bottom: 18px;
 }
