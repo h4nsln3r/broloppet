@@ -68,7 +68,7 @@ export function Information() {
                 <span className="">
                   {/* {WEDDING.ceremony.time} — Vigsel */}
                   Vigseln börjar kl. {WEDDING.ceremony.time} i{" "}
-                  {WEDDING.ceremony.place}. Se till att vara där semast 13:45.
+                  {WEDDING.ceremony.place}. Se till att vara där senast 13:45.
                 </span>
                 <span
                   role="button"

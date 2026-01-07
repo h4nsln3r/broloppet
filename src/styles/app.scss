@@ -1,4 +1,4 @@
-@use './variables' as *;
+@use "./variables" as *;
 
 :root {
   --bg: #{$bg-color};
@@ -38,6 +38,13 @@ body {
 
 .tiny {
   font-size: 0.75rem;
+}
+
+.welcome {
+  text-align: center;
+  margin: 20px 0 30px;
+  font-size: 1rem;
+  font-family: $font-heading;
 }
 
 .grid {
