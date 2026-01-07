@@ -1,40 +1,31 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 
 export type RsvpFormValues = {
   name: string;
   email: string;
-  attending: 'yes' | 'no' | '';
+  attending: "yes" | "no" | "";
   allergies: string;
   foodPrefs: string;
-  speech: 'yes' | 'no' | '';
-  speechDetails: string;
 };
 
 const initialForm: RsvpFormValues = {
-  name: '',
-  email: '',
-  attending: '',
-  allergies: '',
-  foodPrefs: '',
-  speech: '',
-  speechDetails: '',
+  name: "",
+  email: "",
+  attending: "",
+  allergies: "",
+  foodPrefs: "",
 };
 
-// sätt denna till true när Google Form är kopplat
-const enableGoogleForm = false;
+const GOOGLE_FORM_ACTION =
+  "https://docs.google.com/forms/d/e/1FAIpQLSdsXv5hBd9mGLxadeNbuvAqMdFWqXiBglw1VhqsjXPn9p3Sdg/formResponse";
 
-// TODO: byt mot din riktiga formAction-URL från Google Forms
-const GOOGLE_FORM_ACTION = 'PASTE_FORM_RESPONSE_URL_HERE';
-
-// TODO: fyll i dina riktiga entry-id:n
+// Entry IDs från din prefilled-länk
 const entryIds = {
-  name: 'entry.XXXXXXXXX',
-  email: 'entry.XXXXXXXXX',
-  attending: 'entry.XXXXXXXXX',
-  allergies: 'entry.XXXXXXXXX',
-  foodPrefs: 'entry.XXXXXXXXX',
-  speech: 'entry.XXXXXXXXX',
-  speechDetails: 'entry.XXXXXXXXX',
+  name: "entry.372731744",
+  attending: "entry.388611717", // JA / NEJ
+  allergies: "entry.2000885047",
+  foodPrefs: "entry.207181512",
+  email: "entry.1988040124",
 } as const;
 
 type Props = {
@@ -43,7 +34,9 @@ type Props = {
 
 export function RsvpForm({ osaDeadline }: Props) {
   const [form, setForm] = useState<RsvpFormValues>(initialForm);
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    "idle"
+  );
 
   const canSubmit = useMemo(() => {
     if (!form.name.trim()) return false;
@@ -51,44 +44,41 @@ export function RsvpForm({ osaDeadline }: Props) {
     return true;
   }, [form.name, form.attending]);
 
-  function update<K extends keyof RsvpFormValues>(key: K, value: RsvpFormValues[K]) {
+  function update<K extends keyof RsvpFormValues>(
+    key: K,
+    value: RsvpFormValues[K]
+  ) {
     setForm((prev) => ({ ...prev, [key]: value }));
-    if (status !== 'idle') setStatus('idle');
+    if (status !== "idle") setStatus("idle");
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
 
-    if (!enableGoogleForm) {
-      // bara demo-läge
-      setStatus('sent');
-      setForm(initialForm);
-      return;
-    }
-
     try {
-      setStatus('sending');
+      setStatus("sending");
 
       const fd = new FormData();
       fd.set(entryIds.name, form.name);
       fd.set(entryIds.email, form.email);
-      fd.set(entryIds.attending, form.attending === 'yes' ? 'Ja' : 'Nej');
+
+      // Exakt match mot Google Form
+      fd.set(entryIds.attending, form.attending === "yes" ? "JA" : "NEJ");
+
       fd.set(entryIds.allergies, form.allergies);
       fd.set(entryIds.foodPrefs, form.foodPrefs);
-      fd.set(entryIds.speech, form.speech === 'yes' ? 'Ja' : 'Nej');
-      fd.set(entryIds.speechDetails, form.speechDetails);
 
       await fetch(GOOGLE_FORM_ACTION, {
-        method: 'POST',
+        method: "POST",
         body: fd,
-        mode: 'no-cors',
+        mode: "no-cors",
       });
 
-      setStatus('sent');
+      setStatus("sent");
       setForm(initialForm);
     } catch {
-      setStatus('error');
+      setStatus("error");
     }
   }
 
@@ -100,16 +90,17 @@ export function RsvpForm({ osaDeadline }: Props) {
           <input
             type="text"
             value={form.name}
-            onChange={(e) => update('name', e.target.value)}
+            onChange={(e) => update("name", e.target.value)}
             required
           />
         </label>
+
         <label>
           E-post (valfritt)
           <input
             type="email"
             value={form.email}
-            onChange={(e) => update('email', e.target.value)}
+            onChange={(e) => update("email", e.target.value)}
             placeholder="för utskick med mer info"
           />
         </label>
@@ -120,15 +111,15 @@ export function RsvpForm({ osaDeadline }: Props) {
         <div className="segmented">
           <button
             type="button"
-            className={form.attending === 'yes' ? 'active' : ''}
-            onClick={() => update('attending', 'yes')}
+            className={form.attending === "yes" ? "active" : ""}
+            onClick={() => update("attending", "yes")}
           >
             Ja
           </button>
           <button
             type="button"
-            className={form.attending === 'no' ? 'active' : ''}
-            onClick={() => update('attending', 'no')}
+            className={form.attending === "no" ? "active" : ""}
+            onClick={() => update("attending", "no")}
           >
             Nej
           </button>
@@ -139,7 +130,7 @@ export function RsvpForm({ osaDeadline }: Props) {
         Allergier
         <textarea
           value={form.allergies}
-          onChange={(e) => update('allergies', e.target.value)}
+          onChange={(e) => update("allergies", e.target.value)}
           placeholder="Gluten, laktos, nötter osv."
           rows={2}
         />
@@ -149,60 +140,27 @@ export function RsvpForm({ osaDeadline }: Props) {
         Önskemål kring mat (valfritt)
         <textarea
           value={form.foodPrefs}
-          onChange={(e) => update('foodPrefs', e.target.value)}
+          onChange={(e) => update("foodPrefs", e.target.value)}
           placeholder="Vegetariskt, inga skaldjur, osv."
           rows={2}
         />
       </label>
 
-      {/* <label>
-        Vill du hålla tal / göra något på festen?
-        <div className="segmented">
-          <button
-            type="button"
-            className={form.speech === 'yes' ? 'active' : ''}
-            onClick={() => update('speech', 'yes')}
-          >
-            Ja gärna
-          </button>
-          <button
-            type="button"
-            className={form.speech === 'no' ? 'active' : ''}
-            onClick={() => update('speech', 'no')}
-          >
-            Inte denna gång
-          </button>
-        </div>
-      </label>
-
-      {form.speech === 'yes' && (
-        <label>
-          Skriv kort vad du tänker (valfritt)
-          <textarea
-            value={form.speechDetails}
-            onChange={(e) => update('speechDetails', e.target.value)}
-            placeholder="Tal, sång, spex – ungefär vad?"
-            rows={3}
-          />
-        </label>
-      )} */}
-
       <div className="actions">
-        <button className="submit" disabled={!canSubmit || status === 'sending'}>
-          {status === 'sending' ? 'Skickar...' : 'Skicka OSA'}
+        <button
+          className="submit"
+          disabled={!canSubmit || status === "sending"}
+        >
+          {status === "sending" ? "Skickar..." : "Skicka OSA"}
         </button>
 
-        {status === 'sent' && (
-          <p className="ok">
-            Tack! Ditt svar är registrerat 💛
-            <br />
-            <span className="muted tiny">
-              (Just nu sparas det inte externt förrän Google Form är kopplat.)
-            </span>
-          </p>
+        {status === "sent" && (
+          <p className="ok">Tack! Ditt svar är registrerat 💛</p>
         )}
 
-        {status === 'error' && <p className="err">Något gick fel. Testa igen.</p>}
+        {status === "error" && (
+          <p className="err">Något gick fel. Testa igen.</p>
+        )}
       </div>
 
       <p className="tiny muted">OSA senast: {osaDeadline}</p>
