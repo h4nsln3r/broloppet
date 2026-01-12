@@ -40,12 +40,37 @@ body {
   font-size: 0.75rem;
 }
 
-.welcome {
+.welcomeBlock {
   text-align: center;
   margin: 20px 0 30px;
-  font-size: 1.6rem;
-  font-family: $font-heading;
-  font-weight: 400;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.welcome {
+  margin: 0;
+  font-size: 1.8rem;
+  font-family: "Cormorant Garamond", $font-heading;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+
+  @media (min-width: 720px) {
+    font-size: 2rem;
+  }
+}
+
+.welcomeBlock__heart {
+  width: 46px;
+  height: 46px;
+  opacity: 0.9;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.08));
+}
+
+.welcomeBlock__intro {
+  max-width: 60ch;
+  margin: 0;
+  line-height: 1.55;
 }
 
 .grid {

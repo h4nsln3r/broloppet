@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Simple heart favicon (inherits no external fonts) -->
+  <defs>
+    <linearGradient id="g" x1="12" y1="10" x2="52" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B8AB9B"/>
+      <stop offset="1" stop-color="#E1CFBC"/>
+    </linearGradient>
+  </defs>
+  <path
+    d="M32 55S9 41.4 9 25.3C9 18 14.9 12 22.2 12c4.4 0 8.3 2.2 10.8 5.6C35.5 14.2 39.4 12 43.8 12 51.1 12 57 18 57 25.3 57 41.4 32 55 32 55Z"
+    fill="url(#g)"
+  />
+  <path
+    d="M32 55S9 41.4 9 25.3C9 18 14.9 12 22.2 12c4.4 0 8.3 2.2 10.8 5.6C35.5 14.2 39.4 12 43.8 12 51.1 12 57 18 57 25.3 57 41.4 32 55 32 55Z"
+    stroke="#9C8F80"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+</svg>

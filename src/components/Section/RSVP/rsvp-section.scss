@@ -1,0 +1,38 @@
+@use "../../../styles/variables" as *;
+
+.rsvpSection {
+  margin-top: 34px;
+}
+
+.rsvpBanner {
+  position: relative;
+  border-radius: $radius-card;
+  overflow: hidden;
+  border: 1px solid rgba(219, 200, 181, 0.9);
+  box-shadow: $shadow-soft;
+}
+
+.rsvpBanner__overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(80% 60% at 50% 30%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.24) 55%, rgba(255, 255, 255, 0.18)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.85) 100%);
+}
+
+.rsvpBanner__content {
+  position: relative;
+  padding: 22px 16px;
+  display: flex;
+  justify-content: center;
+
+  @media (min-width: 720px) {
+    padding: 28px 22px;
+  }
+}
+
+// lite mer luft runt själva kortet/formen när det ligger på banner
+.rsvp {
+  width: 100%;
+  max-width: 700px;
+}
