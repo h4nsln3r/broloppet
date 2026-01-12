@@ -11,7 +11,7 @@ export default function App() {
       <Hero wedding={WEDDING} />
 
       <main className="content">
-        <p className="welcome">Välkommen till Hannes och Julias bröllop!</p>
+        <h1 className="welcome">Välkommen till Hannes och Julias bröllop!</h1>
         <Information />
 
         <ToastMasters />

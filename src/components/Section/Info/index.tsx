@@ -104,9 +104,10 @@ export function Information() {
                 </span>
               </div>
             </li>
+
             <li className="time-row">
               <div className="time-col">
-                <span className="time-text">18:00 — Middag</span>
+                <span className="time-text">Ca 18:00 — Middag</span>
                 <span
                   role="button"
                   tabIndex={0}
@@ -123,7 +124,15 @@ export function Information() {
                 </span>
               </div>
             </li>
-            <li className="time-row">
+            <li>
+              <img
+                className="church-main"
+                src="https://www.hossmogard.se/media/s11fy3cd/hossmogard_house_tny.webp?width=1300&height=696&v=1dc2df4c2cbab70"
+                alt="Hossmo Gård"
+                loading="lazy"
+              />
+            </li>
+            {/* <li className="time-row">
               <div className="time-col">
                 <span className="time-text">22:00 — Fest</span>
                 <span
@@ -141,7 +150,7 @@ export function Information() {
                   {WEDDING.party.place}
                 </span>
               </div>
-            </li>
+            </li> */}
           </ul>
         </div>
 
@@ -170,6 +179,33 @@ export function Information() {
         )}
       </div>
       <br />
+      <div className="grid">
+        <div className="card card--info transport-card">
+          <h3>Hur tar en sig hit?</h3>
+          <div className="info-grid">
+            <div className="info-item">
+              <h4>Bussar</h4>
+              <p>Lägg info om bussar</p>
+            </div>
+
+            <div className="info-item">
+              <h4>Bil</h4>
+              <p>Lägg info om parkering</p>
+            </div>
+
+            <div className="info-item">
+              <h4>Taxi</h4>
+              <p>Nummer och taxibolag</p>
+            </div>
+          </div>
+          <br />
+          <ul>
+            {WEDDING.transport.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
 
       <div className="card card--info">
         <div className="info-grid">
@@ -190,16 +226,6 @@ export function Information() {
         </div>
       </div>
       <br />
-      <div className="grid">
-        <div className="card transport-card">
-          <h3>Transport & parkering</h3>
-          <ul>
-            {WEDDING.transport.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
     </section>
   );
 }
