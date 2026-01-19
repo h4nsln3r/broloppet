@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { motion, useAnimationFrame, useMotionValue } from "framer-motion";
+import { useEffect, useRef } from 'react';
+import { motion, useAnimationFrame, useMotionValue } from 'framer-motion';
 
 type BouncyHeartProps = {
   /** Ref till ytan hjärtat ska studsa inom (t.ex. header.hero) */
@@ -8,10 +8,7 @@ type BouncyHeartProps = {
   boostOnClick?: boolean;
 };
 
-export function BouncyHeart({
-  containerRef,
-  boostOnClick = true,
-}: BouncyHeartProps) {
+export function BouncyHeart({ containerRef, boostOnClick = true }: BouncyHeartProps) {
   const x = useMotionValue(40);
   const y = useMotionValue(40);
 
@@ -88,12 +85,14 @@ export function BouncyHeart({
       onPointerDown={() => (draggingRef.current = true)}
       onPointerUp={() => (draggingRef.current = false)}
       onPointerCancel={() => (draggingRef.current = false)}
-      onClick={() => boostOnClick && boost()}
+      onClick={() => {
+        if (boostOnClick) boost();
+      }}
       drag
       dragMomentum={false}
       onDragEnd={() => {
         draggingRef.current = false;
-        boostOnClick && boost();
+        if (boostOnClick) boost();
       }}
       whileTap={{ scale: 0.9 }}
       whileHover={{ scale: 1.05 }}

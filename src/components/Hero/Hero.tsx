@@ -1,11 +1,11 @@
-import { useMemo, useRef } from "react";
-import { Parallax } from "react-scroll-parallax";
+import { useMemo, useRef } from 'react';
+import { Parallax } from 'react-scroll-parallax';
 
-import heroImage from "../../assets/håj.jpg";
-import type { WeddingConfig } from "../../weddingConfig";
-import "./hero.scss";
-import { BouncyHeart } from "../Animation/BouncyHeart";
-import { ScrollToRsvpLetter } from "../Animation/ScrollToRsvpLetter";
+import heroImage from '../../assets/håj.jpg';
+import type { WeddingConfig } from '../../weddingConfig';
+import './hero.scss';
+import { BouncyHeart } from '../Animation/BouncyHeart';
+import { ScrollToRsvpLetter } from '../Animation/ScrollToRsvpLetter';
 
 type HeroProps = {
   wedding: WeddingConfig;
@@ -17,7 +17,7 @@ function splitCouple(couple: string) {
     .map((s) => s.trim())
     .filter(Boolean);
 
-  return [parts[0] ?? "", parts[1] ?? ""] as const;
+  return [parts[0] ?? '', parts[1] ?? ''] as const;
 }
 
 function orderJuliaFirst(a: string, b: string) {
@@ -31,7 +31,7 @@ function orderJuliaFirst(a: string, b: string) {
 }
 
 export function Hero({ wedding }: HeroProps) {
-  const containerRef = useRef<HTMLElement | null>(null);
+  const containerRef = useRef<HTMLElement>(null!);
 
   const [firstName, secondName] = useMemo(() => {
     const [a, b] = splitCouple(wedding.couple);
@@ -39,17 +39,14 @@ export function Hero({ wedding }: HeroProps) {
   }, [wedding.couple]);
 
   return (
-    <header className="hero" ref={containerRef as any}>
+    <header className="hero" ref={containerRef}>
       <Parallax speed={-50} className="hero__parallax" aria-hidden="true">
-        <div
-          className="hero__bg"
-          style={{ backgroundImage: `url('${heroImage}')` }}
-        />
+        <div className="hero__bg" style={{ backgroundImage: `url('${heroImage}')` }} />
       </Parallax>
 
       <div className="hero__fade" aria-hidden="true" />
 
-      <BouncyHeart containerRef={containerRef as any} />
+      <BouncyHeart containerRef={containerRef} />
 
       <ScrollToRsvpLetter targetId="rsvp" label="OSA" />
 

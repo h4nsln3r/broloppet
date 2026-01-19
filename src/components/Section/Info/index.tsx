@@ -1,53 +1,45 @@
-import { useState } from "react";
-import { WEDDING } from "../../../weddingConfig";
-import { FiClock } from "react-icons/fi";
-import hossmoKA from "../../../assets/hossmoka.jpg";
+import { useState } from 'react';
+import { WEDDING } from '../../../weddingConfig';
+import { FiClock } from 'react-icons/fi';
+import hossmoKA from '../../../assets/hossmoka.jpg';
 
-import "../section.scss";
-import "./info-section.scss";
+import '../section.scss';
+import './info-section.scss';
 
 function addQueryParam(url: string, key: string, value: string) {
   // simple helper: append or replace param
   try {
-    const u = new URL(url, "https://example.com");
+    const u = new URL(url, 'https://example.com');
     u.searchParams.set(key, value);
     // If original URL was relative to root (maps embed), try to return with same origin
-    if (url.startsWith("http")) return u.toString();
+    if (url.startsWith('http')) return u.toString();
     // For embed URLs like 'https://www.google.com/maps?q=...&output=embed' URL() works fine
     return u.toString();
   } catch (e) {
     // fallback: naive append
-    const sep = url.includes("?") ? "&" : "?";
+    const sep = url.includes('?') ? '&' : '?';
     console.log(e);
-    return (
-      url + sep + encodeURIComponent(key) + "=" + encodeURIComponent(value)
-    );
+    return url + sep + encodeURIComponent(key) + '=' + encodeURIComponent(value);
   }
 }
 
 export function Information() {
-  const defaultEmbed = addQueryParam(WEDDING.maps.embedSrc, "t", "k");
+  const defaultEmbed = addQueryParam(WEDDING.maps.embedSrc, 't', 'k');
   const ceremonyEmbed = addQueryParam(
-    addQueryParam(WEDDING.maps.ceremonyLink, "output", "embed"),
-    "t",
-    "k"
+    addQueryParam(WEDDING.maps.ceremonyLink, 'output', 'embed'),
+    't',
+    'k'
   );
   const partyEmbed = addQueryParam(
-    addQueryParam(WEDDING.maps.partyLink, "output", "embed"),
-    "t",
-    "k"
+    addQueryParam(WEDDING.maps.partyLink, 'output', 'embed'),
+    't',
+    'k'
   );
 
-  const [activeMap, setActiveMap] = useState<"default" | "ceremony" | "party">(
-    "ceremony"
-  );
+  const [activeMap, setActiveMap] = useState<'default' | 'ceremony' | 'party'>('ceremony');
 
   const mapSrc =
-    activeMap === "ceremony"
-      ? ceremonyEmbed
-      : activeMap === "party"
-      ? partyEmbed
-      : defaultEmbed;
+    activeMap === 'ceremony' ? ceremonyEmbed : activeMap === 'party' ? partyEmbed : defaultEmbed;
 
   return (
     <section className="section">
@@ -67,19 +59,16 @@ export function Information() {
                 <span className="time-text">{WEDDING.ceremony.time}</span>
                 <span className="">
                   {/* {WEDDING.ceremony.time} — Vigsel */}
-                  Vigseln börjar kl. {WEDDING.ceremony.time} i{" "}
-                  {WEDDING.ceremony.place}. Se till att vara där senast 13:45.
+                  Vigseln börjar kl. {WEDDING.ceremony.time} i {WEDDING.ceremony.place}. Se till att
+                  vara där senast 13:45.
                 </span>
                 <span
                   role="button"
                   tabIndex={0}
-                  className={`place-text muted ${
-                    activeMap === "ceremony" ? "active" : ""
-                  }`}
-                  onClick={() => setActiveMap("ceremony")}
+                  className={`place-text muted ${activeMap === 'ceremony' ? 'active' : ''}`}
+                  onClick={() => setActiveMap('ceremony')}
                   onKeyDown={(e) =>
-                    (e.key === "Enter" || e.key === " ") &&
-                    setActiveMap("ceremony")
+                    (e.key === 'Enter' || e.key === ' ') && setActiveMap('ceremony')
                   }
                 >
                   {WEDDING.ceremony.place}
@@ -88,19 +77,13 @@ export function Information() {
             </li>
           </ul>
 
-          <img
-            className="church-main"
-            src={hossmoKA}
-            alt="Hossmo kyrka"
-            loading="lazy"
-          />
+          <img className="church-main" src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
 
           <ul>
             <li className="time-row">
               <div className="time-col">
                 <span className="">
-                  Efter vigseln fortsätter bröllopsfesten på Hossmo gård. Gång
-                  från kyrkan.
+                  Efter vigseln fortsätter bröllopsfesten på Hossmo gård. Gång från kyrkan.
                 </span>
               </div>
             </li>
@@ -111,14 +94,9 @@ export function Information() {
                 <span
                   role="button"
                   tabIndex={0}
-                  className={`place-text muted ${
-                    activeMap === "party" ? "active" : ""
-                  }`}
-                  onClick={() => setActiveMap("party")}
-                  onKeyDown={(e) =>
-                    (e.key === "Enter" || e.key === " ") &&
-                    setActiveMap("party")
-                  }
+                  className={`place-text muted ${activeMap === 'party' ? 'active' : ''}`}
+                  onClick={() => setActiveMap('party')}
+                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveMap('party')}
                 >
                   {WEDDING.party.place}
                 </span>
@@ -154,12 +132,11 @@ export function Information() {
           </ul>
         </div>
 
-        {WEDDING.maps.embedSrc.includes("PASTE_") ? (
+        {WEDDING.maps.embedSrc.includes('PASTE_') ? (
           <div className="card map-card">
             <div className="mapPlaceholder">
               <p className="muted">
-                Lägg in en Google Maps embed-URL i{" "}
-                <code>WEDDING.maps.embedSrc</code>.
+                Lägg in en Google Maps embed-URL i <code>WEDDING.maps.embedSrc</code>.
               </p>
             </div>
           </div>
