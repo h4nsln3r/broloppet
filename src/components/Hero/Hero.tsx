@@ -1,11 +1,12 @@
-import { useMemo, useRef } from 'react';
-import { Parallax } from 'react-scroll-parallax';
+import { useMemo, useRef, useState, useEffect } from "react";
+import { Parallax } from "react-scroll-parallax";
 
-import heroImage from '../../assets/håj.jpg';
-import type { WeddingConfig } from '../../weddingConfig';
-import './hero.scss';
-import { BouncyHeart } from '../Animation/BouncyHeart';
-import { ScrollToRsvpLetter } from '../Animation/ScrollToRsvpLetter';
+import heroImage from "../../assets/håj.jpg";
+import mobileHeroImage from "../../assets/frieri.jpg";
+import type { WeddingConfig } from "../../weddingConfig";
+import "./hero.scss";
+import { BouncyHeart } from "../Animation/BouncyHeart";
+import { ScrollToRsvpLetter } from "../Animation/ScrollToRsvpLetter";
 
 type HeroProps = {
   wedding: WeddingConfig;
@@ -17,7 +18,7 @@ function splitCouple(couple: string) {
     .map((s) => s.trim())
     .filter(Boolean);
 
-  return [parts[0] ?? '', parts[1] ?? ''] as const;
+  return [parts[0] ?? "", parts[1] ?? ""] as const;
 }
 
 function orderJuliaFirst(a: string, b: string) {
@@ -31,7 +32,17 @@ function orderJuliaFirst(a: string, b: string) {
 }
 
 export function Hero({ wedding }: HeroProps) {
-  const containerRef = useRef<HTMLElement>(null!);
+  const containerRef = useRef<HTMLElement | null>(null);
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const currentImage = !isMobile ? mobileHeroImage : heroImage;
 
   const [firstName, secondName] = useMemo(() => {
     const [a, b] = splitCouple(wedding.couple);
@@ -41,7 +52,10 @@ export function Hero({ wedding }: HeroProps) {
   return (
     <header className="hero" ref={containerRef}>
       <Parallax speed={-50} className="hero__parallax" aria-hidden="true">
-        <div className="hero__bg" style={{ backgroundImage: `url('${heroImage}')` }} />
+        <div
+          className="hero__bg"
+          style={{ backgroundImage: `url('${currentImage}')` }}
+        />
       </Parallax>
 
       <div className="hero__fade" aria-hidden="true" />
