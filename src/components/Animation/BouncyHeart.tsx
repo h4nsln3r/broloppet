@@ -3,7 +3,7 @@ import { motion, useAnimationFrame, useMotionValue } from 'framer-motion';
 
 type BouncyHeartProps = {
   /** Ref till ytan hjärtat ska studsa inom (t.ex. header.hero) */
-  containerRef: React.RefObject<HTMLElement>;
+  containerRef: React.RefObject<HTMLElement | null>;
   /** Klick/tap ger en extra knuff */
   boostOnClick?: boolean;
 };
