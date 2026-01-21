@@ -1,8 +1,13 @@
+// src/components/Hero/Hero.tsx
 import { useMemo, useRef, useState, useEffect } from "react";
 import { Parallax } from "react-scroll-parallax";
 
 import heroImage from "../../assets/håj.jpg";
 import mobileHeroImage from "../../assets/frieri.jpg";
+// Importera fler bilder här när du har dem
+// import heroImage2 from "../../assets/hero2.jpg";
+// import mobileHeroImage2 from "../../assets/mobile-hero2.jpg";
+
 import type { WeddingConfig } from "../../weddingConfig";
 import "./hero.scss";
 import { BouncyHeart } from "../Animation/BouncyHeart";
@@ -12,6 +17,7 @@ type HeroProps = {
   wedding: WeddingConfig;
 };
 
+// ... splitCouple + orderJuliaFirst som innan ...
 function splitCouple(couple: string) {
   const parts = couple
     .split(/\s*(?:&|and|och)\s*/i)
@@ -42,12 +48,42 @@ export function Hero({ wedding }: HeroProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const currentImage = !isMobile ? mobileHeroImage : heroImage;
+  // 1) Listor med bilder för desktop/mobil
+  const desktopImages = [
+    heroImage,
+    mobileHeroImage,
+    // heroImage2,
+    // fler ...
+  ];
+
+  const mobileImages = [
+    mobileHeroImage,
+    heroImage,
+    // mobileHeroImage2,
+    // fler ...
+  ];
+
+  // 2) Index som vi snurrar runt vid varje studs
+  const [imageIndex, setImageIndex] = useState(0);
+
+  // 3) Välj nuvarande lista baserat på isMobile
+  const activeList = isMobile ? mobileImages : desktopImages;
+
+  // Fallback om listan skulle vara tom av misstag
+  const currentImage =
+    activeList.length > 0
+      ? activeList[imageIndex % activeList.length]
+      : heroImage;
 
   const [firstName, secondName] = useMemo(() => {
     const [a, b] = splitCouple(wedding.couple);
     return orderJuliaFirst(a, b);
   }, [wedding.couple]);
+
+  // Callback som skickas till BouncyHeart
+  const handleHeartBounce = () => {
+    setImageIndex((prev) => prev + 1);
+  };
 
   return (
     <header className="hero" ref={containerRef}>
@@ -60,7 +96,7 @@ export function Hero({ wedding }: HeroProps) {
 
       <div className="hero__fade" aria-hidden="true" />
 
-      <BouncyHeart containerRef={containerRef} />
+      <BouncyHeart containerRef={containerRef} onBounce={handleHeartBounce} />
 
       <ScrollToRsvpLetter targetId="rsvp" label="OSA" />
 

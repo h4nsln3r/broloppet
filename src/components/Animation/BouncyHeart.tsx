@@ -1,14 +1,21 @@
-import { useEffect, useRef } from 'react';
-import { motion, useAnimationFrame, useMotionValue } from 'framer-motion';
+// src/components/Animation/BouncyHeart.tsx
+import { useEffect, useRef } from "react";
+import { motion, useAnimationFrame, useMotionValue } from "framer-motion";
 
 type BouncyHeartProps = {
   /** Ref till ytan hjärtat ska studsa inom (t.ex. header.hero) */
   containerRef: React.RefObject<HTMLElement | null>;
   /** Klick/tap ger en extra knuff */
   boostOnClick?: boolean;
+  /** Körs varje gång hjärtat studsar mot en vägg */
+  onBounce?: () => void;
 };
 
-export function BouncyHeart({ containerRef, boostOnClick = true }: BouncyHeartProps) {
+export function BouncyHeart({
+  containerRef,
+  boostOnClick = true,
+  onBounce,
+}: BouncyHeartProps) {
   const x = useMotionValue(40);
   const y = useMotionValue(40);
 
@@ -56,24 +63,35 @@ export function BouncyHeart({ containerRef, boostOnClick = true }: BouncyHeartPr
     let nx = x.get() + vxRef.current * dt;
     let ny = y.get() + vyRef.current * dt;
 
+    let bounced = false;
+
     if (nx <= minX) {
       nx = minX;
       vxRef.current = Math.abs(vxRef.current);
+      bounced = true;
     } else if (nx >= maxX) {
       nx = maxX;
       vxRef.current = -Math.abs(vxRef.current);
+      bounced = true;
     }
 
     if (ny <= minY) {
       ny = minY;
       vyRef.current = Math.abs(vyRef.current);
+      bounced = true;
     } else if (ny >= maxY) {
       ny = maxY;
       vyRef.current = -Math.abs(vyRef.current);
+      bounced = true;
     }
 
     x.set(nx);
     y.set(ny);
+
+    // Byt bild i hero när vi studsar på någon vägg
+    if (bounced && onBounce) {
+      onBounce();
+    }
   });
 
   return (
@@ -83,13 +101,13 @@ export function BouncyHeart({ containerRef, boostOnClick = true }: BouncyHeartPr
       style={{ x, y }}
       aria-label="Kärlekshjärta"
       onPointerDown={() => (draggingRef.current = true)}
-      onPointerUp={() => (draggingRef.current = false)}
-      onPointerCancel={() => (draggingRef.current = false)}
-      onClick={() => {
+      onPointerUp={() => {
+        draggingRef.current = false;
         if (boostOnClick) boost();
       }}
       drag
       dragMomentum={false}
+      onDragStart={() => (draggingRef.current = true)}
       onDragEnd={() => {
         draggingRef.current = false;
         if (boostOnClick) boost();
