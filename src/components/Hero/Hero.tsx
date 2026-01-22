@@ -2,8 +2,9 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { Parallax } from "react-scroll-parallax";
 
-import heroImage from "../../assets/håj.jpg";
-import mobileHeroImage from "../../assets/frieri.jpg";
+import backgoundImage from "../../assets/background-images/viet.jpg";
+import backgoundImage1 from "../../assets/background-images/frieri.jpg";
+import backgoundImage2 from "../../assets/background-images/puss.jpg";
 // Importera fler bilder här när du har dem
 // import heroImage2 from "../../assets/hero2.jpg";
 // import mobileHeroImage2 from "../../assets/mobile-hero2.jpg";
@@ -50,15 +51,16 @@ export function Hero({ wedding }: HeroProps) {
 
   // 1) Listor med bilder för desktop/mobil
   const desktopImages = [
-    heroImage,
-    mobileHeroImage,
+    backgoundImage,
+    backgoundImage1,
     // heroImage2,
     // fler ...
   ];
 
   const mobileImages = [
-    mobileHeroImage,
-    heroImage,
+    backgoundImage1,
+    backgoundImage,
+    backgoundImage2,
     // mobileHeroImage2,
     // fler ...
   ];
@@ -73,7 +75,7 @@ export function Hero({ wedding }: HeroProps) {
   const currentImage =
     activeList.length > 0
       ? activeList[imageIndex % activeList.length]
-      : heroImage;
+      : backgoundImage;
 
   const [firstName, secondName] = useMemo(() => {
     const [a, b] = splitCouple(wedding.couple);

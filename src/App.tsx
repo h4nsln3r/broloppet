@@ -4,7 +4,7 @@ import { WEDDING } from "./weddingConfig";
 import { Information } from "./components/Section/Info";
 import { ToastMasters } from "./components/Section/Toast";
 import { RSVP } from "./components/Section/RSVP";
-import heartMark from "./assets/heart-mark.svg";
+import heartMark from "./assets/icons/heart-mark.svg";
 
 export default function App() {
   return (
