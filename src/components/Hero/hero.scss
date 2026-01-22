@@ -104,8 +104,8 @@
 
   .hero__bouncyHeart {
     position: absolute;
-    top: 0; // ✅ viktigt
-    left: 0; // ✅ viktigt
+    top: 0;
+    left: 0;
     z-index: 2;
 
     width: 44px;
@@ -115,23 +115,43 @@
     display: grid;
     place-items: center;
 
-    cursor: grab;
+    cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
 
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.18);
     backdrop-filter: blur(6px);
 
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: none; // vi låter ringen stå för “kanten”
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
 
     font-size: 22px;
     line-height: 1;
     color: #ff2b2b;
+  }
 
-    &:active {
-      cursor: grabbing;
-    }
+  .hero__bouncyHeartRing {
+    position: absolute;
+    inset: 0; // fyll hela knappen
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg); // börja uppifrån
+    pointer-events: none;
+    transition: opacity 0.15s ease-out;
+  }
+
+  .hero__bouncyHeartRingBg {
+    fill: transparent;
+    stroke: rgba(255, 255, 255, 0.4);
+    stroke-width: 3;
+  }
+
+  .hero__bouncyHeartRingProgress {
+    fill: transparent;
+    stroke: #ff2b2b;
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.08s linear;
   }
 
   .hero__letter {

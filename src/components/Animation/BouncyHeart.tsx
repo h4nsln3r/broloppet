@@ -1,5 +1,5 @@
 // src/components/Animation/BouncyHeart.tsx
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useAnimationFrame, useMotionValue } from "framer-motion";
 
 type BouncyHeartProps = {
@@ -10,6 +10,13 @@ type BouncyHeartProps = {
   /** Körs varje gång hjärtat studsar mot en vägg */
   onBounce?: () => void;
 };
+
+const HOLD_TOTAL_MS = 3000; // totalt 3 sekunder
+const HOLD_VISUAL_DELAY_MS = 500; // 0.5s innan man ser laddningen
+
+// Ring-geometri
+const RADIUS = 18;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 export function BouncyHeart({
   containerRef,
@@ -23,7 +30,11 @@ export function BouncyHeart({
   const vxRef = useRef(140);
   const vyRef = useRef(110);
 
-  const draggingRef = useRef(false);
+  // Long-press state
+  const [holdProgress, setHoldProgress] = useState(0); // 0–1 för ringen
+  const isHoldingRef = useRef(false);
+  const holdElapsedMsRef = useRef(0);
+  const holdCompletedRef = useRef(false);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -43,12 +54,44 @@ export function BouncyHeart({
     vyRef.current = clamp(vyRef.current + (Math.random() * 2 - 1) * boost);
   }
 
-  useAnimationFrame((_t, delta) => {
-    if (draggingRef.current) return;
+  function resetHold() {
+    isHoldingRef.current = false;
+    holdElapsedMsRef.current = 0;
+    holdCompletedRef.current = false;
+    setHoldProgress(0);
+  }
 
+  useAnimationFrame((_t, delta) => {
     const el = containerRef.current;
     if (!el) return;
 
+    // --- Long press / laddning ---
+    if (isHoldingRef.current) {
+      holdElapsedMsRef.current += delta;
+
+      // 1) beräkna visuell progress med 0.5s delay
+      const visualElapsed = Math.max(
+        0,
+        holdElapsedMsRef.current - HOLD_VISUAL_DELAY_MS,
+      );
+      const visualDuration = Math.max(1, HOLD_TOTAL_MS - HOLD_VISUAL_DELAY_MS);
+      const visualProgress = Math.min(1, visualElapsed / visualDuration);
+      setHoldProgress(visualProgress);
+
+      // 2) själva “klar”-logiken efter totalt 3s
+      if (
+        holdElapsedMsRef.current >= HOLD_TOTAL_MS &&
+        !holdCompletedRef.current
+      ) {
+        holdCompletedRef.current = true;
+        alert("Du höll kvar i hjärtat i 3 sekunder – det måste vara kärlek 💕");
+      }
+
+      // Pausa studset när man håller
+      return;
+    }
+
+    // --- Bouncy-fysik ---
     const dt = delta / 1000;
     const rect = el.getBoundingClientRect();
 
@@ -88,7 +131,6 @@ export function BouncyHeart({
     x.set(nx);
     y.set(ny);
 
-    // Byt bild i hero när vi studsar på någon vägg
     if (bounced && onBounce) {
       onBounce();
     }
@@ -100,17 +142,24 @@ export function BouncyHeart({
       className="hero__bouncyHeart hero__bouncyHeart--bare"
       style={{ x, y }}
       aria-label="Kärlekshjärta"
-      onPointerDown={() => (draggingRef.current = true)}
-      onPointerUp={() => {
-        draggingRef.current = false;
-        if (boostOnClick) boost();
+      onPointerDown={() => {
+        isHoldingRef.current = true;
+        holdElapsedMsRef.current = 0;
+        holdCompletedRef.current = false;
+        setHoldProgress(0);
       }}
-      drag
-      dragMomentum={false}
-      onDragStart={() => (draggingRef.current = true)}
-      onDragEnd={() => {
-        draggingRef.current = false;
-        if (boostOnClick) boost();
+      onPointerUp={() => {
+        const completed = holdCompletedRef.current;
+        resetHold();
+        if (boostOnClick && !completed) {
+          boost();
+        }
+      }}
+      onPointerCancel={resetHold}
+      onPointerLeave={(e) => {
+        if (e.buttons === 0) {
+          resetHold();
+        }
       }}
       whileTap={{ scale: 0.9 }}
       whileHover={{ scale: 1.05 }}
@@ -118,7 +167,28 @@ export function BouncyHeart({
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.35 }}
     >
-      ❤
+      {/* Laddring runt hjärtat */}
+      <svg
+        className="hero__bouncyHeartRing"
+        viewBox="0 0 44 44"
+        style={{ opacity: holdProgress > 0 ? 1 : 0.45 }}
+      >
+        <circle
+          className="hero__bouncyHeartRingBg"
+          cx="22"
+          cy="22"
+          r={RADIUS}
+        />
+        <circle
+          className="hero__bouncyHeartRingProgress"
+          cx="22"
+          cy="22"
+          r={RADIUS}
+          strokeDasharray={CIRCUMFERENCE}
+          strokeDashoffset={CIRCUMFERENCE * (1 - holdProgress)}
+        />
+      </svg>
+      {/* Själva hjärt-ikonen */}❤
     </motion.button>
   );
 }
