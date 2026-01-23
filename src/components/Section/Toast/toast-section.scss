@@ -1,0 +1,35 @@
+@use '../../../styles/variables' as *;
+
+.toastCard {
+  display: grid;
+  gap: 16px;
+  align-items: center;
+
+  @media (min-width: 720px) {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+.toastCard__text {
+  font-size: 0.95rem;
+
+  p {
+    margin-bottom: 8px;
+  }
+}
+
+.toastCard__list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 16px;
+
+  li + li {
+    margin-top: 6px;
+  }
+}
+
+.toastCard__image img {
+  display: block;
+  width: 100%;
+  border-radius: 16px;
+}

@@ -1,6 +1,10 @@
+// src/components/Section/Info/info-section.scss
 @use '../../../styles/variables' as *;
 @use 'sass:color' as color;
-
+.info-item {
+  font-family: $font-heading;
+  font-size: 1.05rem;
+}
 .grid--times {
   display: grid;
   gap: 12px;
@@ -23,6 +27,7 @@
       align-items: center;
       gap: 8px;
       margin: 0 0 6px;
+
       .icon {
         display: inline-block;
         width: 20px;
@@ -44,6 +49,7 @@
         justify-content: space-between;
         gap: 12px;
         margin-bottom: 10px;
+
         .time-col {
           display: flex;
           flex-direction: column;
@@ -54,20 +60,16 @@
           display: inline-block;
           font-weight: 600;
         }
-
-        .place-text {
-          font-size: 0.95rem;
-          color: var(--muted);
-          &:hover {
-            text-decoration: underline;
-            cursor: pointer;
-          }
-        }
       }
     }
 
     .muted {
       margin-top: 8px;
+    }
+
+    .highlight-info {
+      font-family: $font-heading;
+      font-size: 1.05rem;
     }
 
     .church-main {
@@ -167,4 +169,14 @@
 
 .transport-card {
   margin-bottom: 18px;
+}
+
+.place-text {
+  font-size: 0.95rem;
+  color: var(--muted);
+
+  &:hover {
+    text-decoration: underline;
+    cursor: pointer;
+  }
 }

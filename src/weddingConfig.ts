@@ -1,3 +1,4 @@
+// src/weddingConfig.ts
 export const WEDDING = {
   couple: 'Hannes & Julia',
   // Ändra datumtexten om ni vill ha annan formulering
@@ -15,15 +16,24 @@ export const WEDDING = {
   dressCode: 'Sommarfin', // t.ex. Kavaj / Sommarfin / Valfritt
   childrenPolicy: 'Vi önskar en barnfri dag/kväll ❤️',
   gifts: 'Vi önskar oss gärna ett bidrag till vår bröllopsresa.',
-  toastmaster: {
-    name: 'Toastmaster/Toastmadame: (namn)',
-    contact: '(telefon / mail)',
-    note: 'Vill du hålla tal, spex eller uppträde? Kontakta toastmaster/toastmadame i god tid.',
+  toastmasters: [
+    {
+      name: 'Jenny Griffin',
+      email: 'jenny@example.com',
+    },
+    {
+      name: 'Erik Tebrell',
+      email: 'erik@example.com',
+    },
+  ],
+  toastInfo: {
+    deadline: '1 juli 2026',
+    note: 'Vill du hålla tal, spex eller göra något annat kul under kvällen? Hör gärna av dig i god tid så hjälper våra toastmasters till att pussla ihop programmet.',
   },
   transport: [
-    'Kyrka: (tips om parkering/transport här)',
-    'Hossmo gård: (vägbeskrivning/parkering här)',
-    'Samåkning: (om ni vill lägga till)',
+    'Buss: KLT:s linje 403 går från Kalmar C till Hossmo kyrka / Hossmo E22 på cirka 20 minuter. Se KLT-appen eller kalmarlanstrafik.se för aktuella tider.',
+    'Bil: Det finns parkering vid både Hossmo kyrka och Hossmo gård – samåk gärna om ni kan.',
+    'Taxi: Till exempel Sverigetaxi Kalmar 0480-44 44 44 eller Kalmar Taxi 0480-28 200 (förboka gärna).',
   ],
   maps: {
     // Tips: använd “Dela” i Google Maps och ta en länk till kyrkan + gården

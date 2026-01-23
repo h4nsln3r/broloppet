@@ -1,3 +1,4 @@
+// src/components/Section/Info/index.tsx
 import { useState } from 'react';
 import { WEDDING } from '../../../weddingConfig';
 import { FiClock } from 'react-icons/fi';
@@ -5,6 +6,7 @@ import hossmoKA from '../../../assets/hossmoka.jpg';
 
 import '../section.scss';
 import './info-section.scss';
+import { PlaceToggle, type MapTarget } from './PlaceToggle';
 
 function addQueryParam(url: string, key: string, value: string) {
   // simple helper: append or replace param
@@ -36,7 +38,7 @@ export function Information() {
     'k'
   );
 
-  const [activeMap, setActiveMap] = useState<'default' | 'ceremony' | 'party'>('ceremony');
+  const [activeMap, setActiveMap] = useState<MapTarget>('ceremony');
 
   const mapSrc =
     activeMap === 'ceremony' ? ceremonyEmbed : activeMap === 'party' ? partyEmbed : defaultEmbed;
@@ -57,21 +59,18 @@ export function Information() {
             <li className="time-row">
               <div className="time-col">
                 <span className="time-text">{WEDDING.ceremony.time}</span>
-                <span className="">
+                <span>
                   {/* {WEDDING.ceremony.time} — Vigsel */}
-                  Vigseln börjar kl. {WEDDING.ceremony.time} i {WEDDING.ceremony.place}. Se till att
-                  vara där senast 13:45.
-                </span>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  className={`place-text muted ${activeMap === 'ceremony' ? 'active' : ''}`}
-                  onClick={() => setActiveMap('ceremony')}
-                  onKeyDown={(e) =>
-                    (e.key === 'Enter' || e.key === ' ') && setActiveMap('ceremony')
-                  }
-                >
-                  {WEDDING.ceremony.place}
+                  Vigseln börjar kl. {WEDDING.ceremony.time} i{' '}
+                  <PlaceToggle
+                    target="ceremony"
+                    activeMap={activeMap}
+                    setActiveMap={setActiveMap}
+                    className=""
+                  >
+                    {WEDDING.ceremony.place}
+                  </PlaceToggle>
+                  . Se till att vara där senast 13:45.
                 </span>
               </div>
             </li>
@@ -82,26 +81,21 @@ export function Information() {
           <ul>
             <li className="time-row">
               <div className="time-col">
-                <span className="">
-                  Efter vigseln fortsätter bröllopsfesten på Hossmo gård. Gång från kyrkan.
+                <span className="highlight-info">
+                  Bröllopsfesten fortsätter på{' '}
+                  <PlaceToggle
+                    target="party"
+                    activeMap={activeMap}
+                    setActiveMap={setActiveMap}
+                    className=""
+                  >
+                    {WEDDING.party.place}
+                  </PlaceToggle>{' '}
+                  efter vigseln. Det är en kort promenad från kyrkan.
                 </span>
               </div>
             </li>
 
-            <li className="time-row">
-              <div className="time-col">
-                <span className="time-text">Ca 18:00 — Middag</span>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  className={`place-text muted ${activeMap === 'party' ? 'active' : ''}`}
-                  onClick={() => setActiveMap('party')}
-                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveMap('party')}
-                >
-                  {WEDDING.party.place}
-                </span>
-              </div>
-            </li>
             <li>
               <img
                 className="church-main"
@@ -110,25 +104,6 @@ export function Information() {
                 loading="lazy"
               />
             </li>
-            {/* <li className="time-row">
-              <div className="time-col">
-                <span className="time-text">22:00 — Fest</span>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  className={`place-text muted ${
-                    activeMap === "party" ? "active" : ""
-                  }`}
-                  onClick={() => setActiveMap("party")}
-                  onKeyDown={(e) =>
-                    (e.key === "Enter" || e.key === " ") &&
-                    setActiveMap("party")
-                  }
-                >
-                  {WEDDING.party.place}
-                </span>
-              </div>
-            </li> */}
           </ul>
         </div>
 
@@ -155,32 +130,77 @@ export function Information() {
           </>
         )}
       </div>
+
       <br />
+
       <div className="grid">
         <div className="card card--info transport-card">
-          <h3>Hur tar en sig hit?</h3>
+          <h3>Hur tar man sig dit?</h3>
           <div className="info-grid">
+            {/* Buss */}
             <div className="info-item">
-              <h4>Bussar</h4>
-              <p>Lägg info om bussar</p>
+              <h4>Buss</h4>
+              <p>
+                Från Kalmar Centralstation går KLT:s linje <strong>403</strong> mot Ljungbyholm /
+                Torsås. Kliv av vid hållplats{' '}
+                <PlaceToggle
+                  target="ceremony"
+                  activeMap={activeMap}
+                  setActiveMap={setActiveMap}
+                  className=""
+                >
+                  Hossmo kyrka
+                </PlaceToggle>{' '}
+                eller <strong>Hossmo E22</strong>. Resan tar ca 20 minuter.
+                <br />
+                <br />
+                Se aktuella tider i KLT-appen eller på{' '}
+                <a href="https://www.kalmarlanstrafik.se" target="_blank" rel="noreferrer">
+                  kalmarlanstrafik.se
+                </a>
+                .
+              </p>
             </div>
 
+            {/* Bil */}
             <div className="info-item">
               <h4>Bil</h4>
-              <p>Lägg info om parkering</p>
+              <p>
+                Det finns parkering både vid{' '}
+                <PlaceToggle
+                  target="ceremony"
+                  activeMap={activeMap}
+                  setActiveMap={setActiveMap}
+                  className=""
+                >
+                  Hossmo kyrka
+                </PlaceToggle>{' '}
+                och{' '}
+                <PlaceToggle
+                  target="party"
+                  activeMap={activeMap}
+                  setActiveMap={setActiveMap}
+                  className=""
+                >
+                  Hossmo gård
+                </PlaceToggle>
+                . Följ skyltning på plats och samåk gärna om ni har möjlighet.
+              </p>
             </div>
 
+            {/* Taxi */}
             <div className="info-item">
               <h4>Taxi</h4>
-              <p>Nummer och taxibolag</p>
+              <p>
+                Förboka gärna taxi då det kan vara hög belastning i Kalmar kvällstid.
+                <br />
+                <strong>Sverigetaxi Kalmar:</strong>{' '}
+                <a href="tel:0480444444">0480-44&nbsp;44&nbsp;44</a>
+                <br />
+                <strong>Kalmar Taxi:</strong> <a href="tel:048028200">0480-28&nbsp;200</a>
+              </p>
             </div>
           </div>
-          <br />
-          <ul>
-            {WEDDING.transport.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
         </div>
       </div>
 
@@ -202,6 +222,7 @@ export function Information() {
           </div>
         </div>
       </div>
+
       <br />
     </section>
   );
