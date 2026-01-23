@@ -1,5 +1,4 @@
 // src/components/Animation/BouncyHeart/BouncyRing.tsx
-import React from "react";
 
 const RADIUS = 18;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
