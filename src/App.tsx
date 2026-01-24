@@ -14,7 +14,7 @@ export default function App() {
       <main className="content">
         <div className="welcomeBlock">
           <h1 className="welcome">Välkommen till Hannes och Julias bröllop!</h1>
-          <img className="welcomeBlock__heart" src={heartMark} alt="" />
+          <img className="welcomeBlock__heart" src={heartMark} alt="<3" />
           <p className="welcomeBlock__intro muted">
             Vi är så glada att du vill fira dagen med oss. Här hittar du tider,
             plats, toastmasters och OSA – allt du behöver inför en fin dag
