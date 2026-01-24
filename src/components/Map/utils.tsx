@@ -16,14 +16,3 @@ export function addQueryParam(url: string, key: string, value: string) {
     );
   }
 }
-export const defaultEmbed = addQueryParam(WEDDING.maps.embedSrc, "t", "k");
-const ceremonyEmbed = addQueryParam(
-  addQueryParam(WEDDING.maps.ceremonyLink, "output", "embed"),
-  "t",
-  "k",
-);
-export const partyEmbed = addQueryParam(
-  addQueryParam(WEDDING.maps.partyLink, "output", "embed"),
-  "t",
-  "k",
-);
