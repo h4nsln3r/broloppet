@@ -1,4 +1,4 @@
-@use "./variables" as *;
+@use './variables' as *;
 
 :root {
   --bg: #{$bg-color};
@@ -46,12 +46,18 @@ body {
   display: grid;
   justify-items: center;
   gap: 10px;
+
+  hr {
+    border: 1px gray solid black;
+    width: 50%;
+    margin-top: 20px;
+  }
 }
 
 .welcome {
   margin: 0;
   font-size: 1.8rem;
-  font-family: "Cormorant Garamond", $font-heading;
+  font-family: 'Cormorant Garamond', $font-heading;
   font-weight: 500;
   letter-spacing: 0.02em;
 
