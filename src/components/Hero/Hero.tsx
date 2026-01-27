@@ -55,18 +55,13 @@ export function Hero({ wedding }: HeroProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 1) Listor med bilder för desktop/mobil
   const desktopImages = [
     backgoundImage,
     backgoundImage1,
-    backgoundImage2,
     backgoundImage3,
     backgoundImage4,
     backgoundImage5,
-    backgoundImage6,
-
-    // heroImage2,
-    // fler ...
+    backgoundImage7,
   ];
 
   const mobileImages = [
@@ -77,18 +72,12 @@ export function Hero({ wedding }: HeroProps) {
     backgoundImage4,
     backgoundImage5,
     backgoundImage6,
-
-    // mobileHeroImage2,
-    // fler ...
   ];
 
-  // 2) Index som vi snurrar runt vid varje studs
   const [imageIndex, setImageIndex] = useState(0);
 
-  // 3) Välj nuvarande lista baserat på isMobile
   const activeList = isMobile ? mobileImages : desktopImages;
 
-  // Fallback om listan skulle vara tom av misstag
   const currentImage =
     activeList.length > 0
       ? activeList[imageIndex % activeList.length]
@@ -99,7 +88,6 @@ export function Hero({ wedding }: HeroProps) {
     return orderJuliaFirst(a, b);
   }, [wedding.couple]);
 
-  // Callback som skickas till BouncyHeart
   const handleHeartBounce = () => {
     setImageIndex((prev) => prev + 1);
   };
