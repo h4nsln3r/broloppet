@@ -5,6 +5,12 @@ import { Parallax } from "react-scroll-parallax";
 import backgoundImage from "../../assets/background-images/viet.jpg";
 import backgoundImage1 from "../../assets/background-images/frieri.jpg";
 import backgoundImage2 from "../../assets/background-images/puss.jpg";
+import backgoundImage3 from "../../assets/background-images/bild1.jpg";
+import backgoundImage4 from "../../assets/background-images/bild2.jpg";
+import backgoundImage5 from "../../assets/background-images/bild3.jpg";
+import backgoundImage6 from "../../assets/background-images/bild4.jpg";
+import backgoundImage7 from "../../assets/background-images/bild5.jpg";
+
 // Importera fler bilder här när du har dem
 // import heroImage2 from "../../assets/hero2.jpg";
 // import mobileHeroImage2 from "../../assets/mobile-hero2.jpg";
@@ -53,6 +59,12 @@ export function Hero({ wedding }: HeroProps) {
   const desktopImages = [
     backgoundImage,
     backgoundImage1,
+    backgoundImage2,
+    backgoundImage3,
+    backgoundImage4,
+    backgoundImage5,
+    backgoundImage6,
+
     // heroImage2,
     // fler ...
   ];
@@ -61,6 +73,11 @@ export function Hero({ wedding }: HeroProps) {
     backgoundImage1,
     backgoundImage,
     backgoundImage2,
+    backgoundImage3,
+    backgoundImage4,
+    backgoundImage5,
+    backgoundImage6,
+
     // mobileHeroImage2,
     // fler ...
   ];
