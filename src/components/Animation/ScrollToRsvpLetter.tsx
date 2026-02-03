@@ -30,7 +30,7 @@ export function ScrollToRsvpLetter({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: 0.1 }}
     >
-      ✉<span className="hero__letterText">{label}</span>
+      ✉<span className="hero__letter--text">{label}</span>
     </motion.button>
   );
 }

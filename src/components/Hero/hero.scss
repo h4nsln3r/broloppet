@@ -1,4 +1,5 @@
-/* HERO */
+@use "../../styles/variables" as *;
+
 .hero {
   position: relative;
   isolation: isolate;
@@ -13,18 +14,16 @@
   justify-content: center;
   align-items: center;
 
-  // Parallax-container från react-scroll-parallax
-  .hero__parallax {
+  &__parallax {
     position: absolute !important;
     inset: 0;
     z-index: -2;
     pointer-events: none;
   }
 
-  // Själva bakgrundsbilden
-  .hero__bg {
+  &__bg {
     position: absolute;
-    inset: -14% 0; // större så den kan röra sig utan vita kanter
+    inset: -14% 0;
     background-size: cover;
     background-position: center 100%;
     background-repeat: no-repeat;
@@ -35,7 +34,7 @@
   }
 
   // Fade overlay: tydlig upptill -> mer fade nedtill (smälter in)
-  .hero__fade {
+  &__fade {
     position: absolute;
     inset: 0;
     z-index: -1;
@@ -59,19 +58,29 @@
         );
   }
 
-  h1 {
-    font-family: "Playfair Display", "Times New Roman", serif;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-size: clamp(2.8rem, 4vw, 2.3rem);
+  &__header {
+    position: relative;
+    z-index: 1;
+    h1 {
+      letter-spacing: 0.05em;
+      font-family: $font-romantic;
+      font-weight: 500;
+      font-size: clamp(6.8rem, 4vw, 2.3rem);
+      margin: 0 0 4px;
+      color: rgb(129, 4, 4);
+      text-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+    }
+  }
+
+  &__heart {
     margin: 0 0 4px;
-    text-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
     color: rgb(129, 4, 4);
+    text-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+    font-size: clamp(3.8rem, 4vw, 1.8rem);
   }
 
   .lead {
-    font-family: "Playfair Display", "Times New Roman", serif;
+    font-family: $font-heading;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     font-size: 1.2rem;
@@ -79,82 +88,8 @@
     text-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
     color: rgb(129, 4, 4);
   }
-}
-.hero {
-  // så knappar / hjärta hamnar ovanpå fade
-  .hero__header {
-    position: relative;
-    z-index: 1;
-  }
 
-  .hero__heart {
-    // Hjärtat mellan namnen (istället för &)
-    font-family: "Playfair Display", "Times New Roman", serif;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    margin: 0 0 4px;
-    color: rgb(129, 4, 4);
-    text-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
-
-    // lite tajtare så den känns som en “separator”
-    letter-spacing: 0;
-    transform: translateY(1px);
-  }
-
-  .hero__bouncyHeart {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 2;
-
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
-
-    display: grid;
-    place-items: center;
-
-    cursor: pointer;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-
-    background: rgba(255, 255, 255, 0.18);
-    backdrop-filter: blur(6px);
-
-    border: none;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
-
-    font-size: 22px;
-    line-height: 1;
-    color: #ff2b2b;
-  }
-
-  .hero__bouncyHeartRing {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    transform: rotate(-90deg);
-    pointer-events: none;
-    transition: opacity 0.15s ease-out;
-  }
-
-  .hero__bouncyHeartRingBg {
-    fill: transparent;
-    stroke: rgba(255, 255, 255, 0.4);
-    stroke-width: 3;
-  }
-
-  .hero__bouncyHeartRingProgress {
-    fill: transparent;
-    stroke: #ff2b2b;
-    stroke-width: 3;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 0.08s linear;
-  }
-
-  .hero__letter {
+  &__letter {
     position: absolute;
     z-index: 2;
     right: 16px;
@@ -162,7 +97,7 @@
 
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
 
     padding: 10px 12px;
     border-radius: 999px;
@@ -178,20 +113,19 @@
     user-select: none;
     -webkit-tap-highlight-color: transparent;
 
-    font-family: "Playfair Display", "Times New Roman", serif;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-
-    // själva “ikonen”
-    font-size: 18px;
+    font-family: $font-heading;
+    font-size: 28px;
     line-height: 1;
 
     &:hover {
       transform: translateY(-1px);
     }
-  }
 
-  .hero__letterText {
-    font-size: 0.9rem;
+    &--text {
+      font-size: 1.3rem;
+      font-weight: 500;
+    }
   }
 }

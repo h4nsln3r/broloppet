@@ -139,7 +139,7 @@ function ConfettiDots() {
 export function RsvpForm({ osaDeadline }: Props) {
   const [form, setForm] = useState<RsvpFormValues>(initialForm);
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
-    "idle"
+    "idle",
   );
 
   const canSubmit = useMemo(() => {
@@ -150,7 +150,7 @@ export function RsvpForm({ osaDeadline }: Props) {
 
   function update<K extends keyof RsvpFormValues>(
     key: K,
-    value: RsvpFormValues[K]
+    value: RsvpFormValues[K],
   ) {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (status !== "idle") setStatus("idle");
@@ -215,7 +215,7 @@ export function RsvpForm({ osaDeadline }: Props) {
                 />
               </label>
 
-              <label>
+              {/* <label>
                 E-post (valfritt)
                 <input
                   type="email"
@@ -223,7 +223,7 @@ export function RsvpForm({ osaDeadline }: Props) {
                   onChange={(e) => update("email", e.target.value)}
                   placeholder="för utskick med mer info"
                 />
-              </label>
+              </label> */}
             </div>
 
             <label>
@@ -319,14 +319,11 @@ export function RsvpForm({ osaDeadline }: Props) {
             >
               <FiCheckCircle size={28} />
               <strong style={{ fontSize: "1.05rem" }}>
-                Tack! Ditt svar är registrerat 💛
+                Tack för ditt svar! 💛
               </strong>
             </motion.div>
 
-            <p className="muted" style={{ marginTop: 6 }}>
-              Vi ses snart. Om du behöver ändra något hör av dig till Tebbe!
-              Tack hej!
-            </p>
+            <br />
 
             <motion.button
               type="button"

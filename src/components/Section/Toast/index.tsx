@@ -1,6 +1,6 @@
 // src/components/Section/Toast/index.tsx
-import { WEDDING } from '../../../weddingConfig';
-import { Card } from '../../Card';
+import { WEDDING } from "../../../weddingConfig";
+import { Card } from "../../Card";
 
 export function ToastMasters() {
   return (
@@ -8,9 +8,14 @@ export function ToastMasters() {
       <h2>Tal & underhållning</h2>
       <Card>
         <p>
-          Vi är otroligt glada att ha <strong>{WEDDING.toastmasters[0].name}</strong> och{' '}
-          <strong>{WEDDING.toastmasters[1].name}</strong> som toastmasters under kvällen. De hjälper
-          till att hålla ihop tal, spex och annan underhållning.
+          Vi är otroligt glada att ha{" "}
+          <strong>{WEDDING.toastmasters[0].name}</strong> och{" "}
+          <strong>{WEDDING.toastmasters[1].name}</strong> som toastmasters.
+          <br />
+          <br />
+          De hjälper oss att hålla ihop hela dagen och kvällen – från tal och
+          spex till allt som händer däremellan. Tveka inte att prata med dem om
+          ni behöver hjälp eller har frågor.
         </p>
 
         <div className="info-grid">
@@ -37,7 +42,7 @@ export function ToastMasters() {
               {WEDDING.toastInfo.note}
               <br />
               <br />
-              Sista dag för att anmäla tal eller underhållning:{' '}
+              Sista dag för att anmäla tal eller underhållning:{" "}
               <strong>{WEDDING.toastInfo.deadline}</strong>
             </p>
           </div>

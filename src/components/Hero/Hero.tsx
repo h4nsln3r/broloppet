@@ -34,16 +34,6 @@ function splitCouple(couple: string) {
   return [parts[0] ?? "", parts[1] ?? ""] as const;
 }
 
-function orderJuliaFirst(a: string, b: string) {
-  const hasJuliaA = /julia/i.test(a);
-  const hasJuliaB = /julia/i.test(b);
-
-  if (hasJuliaA) return [a, b] as const;
-  if (hasJuliaB) return [b, a] as const;
-
-  return [b, a] as const;
-}
-
 export function Hero({ wedding }: HeroProps) {
   const containerRef = useRef<HTMLElement | null>(null);
 
@@ -85,7 +75,7 @@ export function Hero({ wedding }: HeroProps) {
 
   const [firstName, secondName] = useMemo(() => {
     const [a, b] = splitCouple(wedding.couple);
-    return orderJuliaFirst(a, b);
+    return [a, b];
   }, [wedding.couple]);
 
   const handleHeartBounce = () => {
@@ -109,9 +99,9 @@ export function Hero({ wedding }: HeroProps) {
 
       <div className="hero__header">
         <h1>{firstName}</h1>
-        <h1 className="hero__heart" aria-hidden="true">
+        <span className="hero__heart" aria-hidden="true">
           ❤
-        </h1>
+        </span>
         <h1>{secondName}</h1>
         <br />
         <p className="lead">{wedding.dateLong}</p>

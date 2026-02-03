@@ -12,13 +12,13 @@ export function BouncyRing({ progress }: BouncyRingProps) {
 
   return (
     <svg
-      className="hero__bouncyHeartRing"
+      className="bouncyHeart__ring"
       viewBox="0 0 44 44"
       style={{ opacity: safeProgress > 0 ? 1 : 0.45 }}
     >
-      <circle className="hero__bouncyHeartRingBg" cx="22" cy="22" r={RADIUS} />
+      <circle className="bouncyHeart__ring--bg" cx="22" cy="22" r={RADIUS} />
       <circle
-        className="hero__bouncyHeartRingProgress"
+        className="bouncyHeart__ring--progress"
         cx="22"
         cy="22"
         r={RADIUS}

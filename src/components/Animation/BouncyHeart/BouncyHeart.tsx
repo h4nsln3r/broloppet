@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useBouncyPhysics } from "./useBouncyPhysics";
 import { useLongPressProgress } from "./useLongPressProgress";
 import { BouncyRing } from "./BouncyRing";
+import "./bouncyHeart.scss";
 
 type BouncyHeartProps = {
   /** Ref till ytan hjärtat ska studsa inom (t.ex. header.hero) */
@@ -64,7 +65,7 @@ export function BouncyHeart({
   return (
     <motion.button
       type="button"
-      className="hero__bouncyHeart hero__bouncyHeart--bare"
+      className="bouncyHeart hero__bouncyHeart--bare"
       style={{ x, y }}
       aria-label="Kärlekshjärta"
       onPointerDown={handlePointerDown}

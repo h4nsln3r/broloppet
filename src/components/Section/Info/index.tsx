@@ -41,7 +41,7 @@ export function Information() {
             {/* <span className="icon" aria-hidden="true">
               <FiClock size={28} />
             </span> */}
-            Lördag - 27 augusti
+            Lördag - 29 augusti
           </h3>
           <ul>
             <li className="time-row">
@@ -82,9 +82,10 @@ export function Information() {
                     setActiveMap={setActiveMap}
                     className=""
                   >
-                    {WEDDING.party.place}
+                    {WEDDING.party.place}.
                   </PlaceToggle>{" "}
-                  efter vigseln. Det är en kort promenad från kyrkan.
+                  <br />
+                  Det är en kort promenad från kyrkan.
                 </span>
               </div>
             </li>
@@ -130,13 +131,16 @@ export function Information() {
       <div className="grid">
         <div className="card card--info transport-card">
           <h3>Hur tar man sig dit?</h3>
+          <p>Adresseb jiner gör</p>
           <div className="info-grid">
             {/* Buss */}
             <div className="info-item">
               <h4>Buss</h4>
               <p>
                 Från Kalmar Centralstation går KLT:s linje <strong>403</strong>{" "}
-                mot Ljungbyholm / Torsås. Kliv av vid hållplats{" "}
+                mot Ljungbyholm / Torsås.
+                <br />
+                Kliv av vid hållplats{" "}
                 <PlaceToggle
                   target="ceremony"
                   activeMap={activeMap}
@@ -150,7 +154,7 @@ export function Information() {
                 Resan tar ca 20 minuter.
                 <br />
                 <br />
-                Se aktuella tider i KLT-appen eller på{" "}
+                Se tidtabell på KLT-appen eller på{" "}
                 <a
                   href="https://www.kalmarlanstrafik.se"
                   target="_blank"
@@ -158,7 +162,7 @@ export function Information() {
                 >
                   kalmarlanstrafik.se
                 </a>
-                .
+                . Biljett köps via appen eller ombord på bussen.
               </p>
             </div>
 
@@ -190,6 +194,7 @@ export function Information() {
             {/* Taxi */}
             <div className="info-item">
               <h4>Taxi</h4>
+              <p>Förslag:</p>
               <p>
                 <strong>Sverigetaxi Kalmar:</strong>{" "}
                 <a href="tel:0480444444">0480-44&nbsp;44&nbsp;44</a>
@@ -206,7 +211,7 @@ export function Information() {
         <div className="info-grid">
           <div className="info-item">
             <h4>Klädkod</h4>
-            <p>{WEDDING.dressCode}</p>
+            <p>Kavaj</p>
           </div>
 
           <div className="info-item">
@@ -215,8 +220,15 @@ export function Information() {
           </div>
 
           <div className="info-item">
-            <h4>Presenter</h4>
-            <p>{WEDDING.gifts}</p>
+            <h4>Present</h4>
+            <p>
+              Den största gåvan för oss är att få fira dagen tillsammans med er.
+              <br />
+              Om ni vill ge en present tar vi tacksamt emot bidrag till vår
+              bröllopsresa till Japan.
+              <br /> Swish kan skickas till vår toastmadame Jenny:
+              <br /> 073 622 67 58.
+            </p>
           </div>
         </div>
       </div>

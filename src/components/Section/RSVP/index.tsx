@@ -11,8 +11,8 @@ export function RSVP() {
     <section className="section rsvpSection" id="rsvp">
       <h2>OSA / RSVP</h2>
       <p className="muted">
-        Svara om du kommer eller inte. Fyll gärna i allergier och önskemål kring
-        mat.
+        Svara om du/ni kommer eller inte. Fyll gärna i allergier och
+        matpreferenser.
       </p>
 
       <ParallaxBanner
