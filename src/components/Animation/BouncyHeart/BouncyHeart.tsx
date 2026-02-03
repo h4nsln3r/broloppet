@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useBouncyPhysics } from "./useBouncyPhysics";
 import { useLongPressProgress } from "./useLongPressProgress";
 import { BouncyRing } from "./BouncyRing";
-import "./bouncyHeart.scss";
+import "./bouncyheart.scss";
 
 type BouncyHeartProps = {
   /** Ref till ytan hjärtat ska studsa inom (t.ex. header.hero) */
