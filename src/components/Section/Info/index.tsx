@@ -32,7 +32,7 @@ export function Information() {
         : defaultEmbed;
 
   return (
-    <section className="section">
+    <section className="section" id="info">
       <h2>Information</h2>
 
       <div className="grid grid--times">
@@ -46,7 +46,6 @@ export function Information() {
           <ul>
             <li className="time-row">
               <div className="time-col">
-                <span className="time-text">{WEDDING.ceremony.time}</span>
                 <span>
                   {/* {WEDDING.ceremony.time} — Vigsel */}
                   Vigseln börjar kl. {WEDDING.ceremony.time} i{" "}

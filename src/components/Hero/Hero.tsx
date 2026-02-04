@@ -82,6 +82,13 @@ export function Hero({ wedding }: HeroProps) {
     setImageIndex((prev) => prev + 1);
   };
 
+  const handleScrollDown = () => {
+    const welcomeBlock = document.querySelector(".welcomeBlock");
+    if (welcomeBlock) {
+      welcomeBlock.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <header className="hero" ref={containerRef}>
       <Parallax speed={-50} className="hero__parallax" aria-hidden="true">
@@ -96,6 +103,26 @@ export function Hero({ wedding }: HeroProps) {
       <BouncyHeart containerRef={containerRef} onBounce={handleHeartBounce} />
 
       <ScrollToRsvpLetter targetId="rsvp" label="OSA" />
+
+      <button
+        className="hero__scroll-arrow"
+        onClick={handleScrollDown}
+        aria-label="Scroll down to information"
+        type="button"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
 
       <div className="hero__header">
         <h1>{firstName}</h1>

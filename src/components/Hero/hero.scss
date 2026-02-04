@@ -5,7 +5,7 @@
   isolation: isolate;
   overflow: hidden;
 
-  min-height: 75vh;
+  min-height: 100dvh;
   padding: 0px 20px 32px;
   text-align: center;
 
@@ -33,7 +33,6 @@
     will-change: transform;
   }
 
-  // Fade overlay: tydlig upptill -> mer fade nedtill (smälter in)
   &__fade {
     position: absolute;
     inset: 0;
@@ -41,7 +40,6 @@
     pointer-events: none;
 
     background:
-      // lite “soft” runt rubriken men fortfarande klart
       radial-gradient(
         900px 420px at 50% 16%,
         rgba(248, 240, 227, 0.08),
@@ -65,10 +63,13 @@
       letter-spacing: 0.05em;
       font-family: $font-romantic;
       font-weight: 500;
-      font-size: clamp(6.8rem, 4vw, 2.3rem);
+      font-size: clamp(10rem, 4vw, 2.3rem);
       margin: 0 0 4px;
       color: rgb(129, 4, 4);
       text-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+      @media (max-width: 768px) {
+        font-size: clamp(6rem, 4vw, 5rem);
+      }
     }
   }
 
@@ -87,6 +88,45 @@
     margin: 0;
     text-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
     color: rgb(129, 4, 4);
+  }
+
+  &__scroll-arrow {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+
+    width: 48px;
+    height: 48px;
+    border: none;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: rgb(129, 4, 4);
+    transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+
+    svg {
+      animation: pulse-arrow 2s ease-in-out infinite;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+      box-shadow:
+        0 0 20px rgba(129, 4, 4, 0.4),
+        0 0 40px rgba(129, 4, 4, 0.15);
+      transform: translateX(-50%) translateY(-4px);
+
+      svg {
+        animation: pulse-arrow 1s ease-in-out infinite;
+        filter: drop-shadow(0 0 8px rgba(129, 4, 4, 0.6));
+      }
+    }
   }
 
   &__letter {
@@ -127,5 +167,19 @@
       font-size: 1.3rem;
       font-weight: 500;
     }
+  }
+}
+
+@keyframes pulse-arrow {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(4px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
