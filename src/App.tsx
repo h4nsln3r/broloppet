@@ -17,9 +17,9 @@ export default function App() {
           <h1 className="welcome">Välkommen till vårt bröllop!</h1>
           <img className="welcomeBlock__heart" src={heartMark} alt="<3" />
           <p className="welcomeBlock__intro muted">
-            Vi är så glada att du vill fira dagen med oss. Här hittar du tider,
-            plats, toastmasters och OSA – allt du behöver inför en fin dag
-            tillsammans.
+            Vi skulle bli så glada om ni vill fira dagen med oss. Här hittar ni
+            tider, plats, toastmasters och OSA – allt du behöver inför en fin
+            dag tillsammans.
           </p>
           <Countdown />
           <hr />
