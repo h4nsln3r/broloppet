@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { FiMail } from "react-icons/fi";
 
 type ScrollToRsvpLetterProps = {
   /** id på RSVP-sektionen, ex: "rsvp" */
@@ -30,7 +31,8 @@ export function ScrollToRsvpLetter({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: 0.1 }}
     >
-      ✉<span className="hero__letter--text">{label}</span>
+      <FiMail className="hero__letter--icon" aria-hidden="true" />
+      <span className="hero__letter--text">{label}</span>
     </motion.button>
   );
 }
