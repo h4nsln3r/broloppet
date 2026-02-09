@@ -117,7 +117,6 @@ a.link {
 }
 
 .mapWrap {
-  border-radius: $radius-card;
   overflow: hidden;
   border: 1px solid rgba(219, 200, 181, 0.9);
   box-shadow: $shadow-soft;
@@ -131,7 +130,7 @@ a.link {
 
 .mapPlaceholder {
   padding: 18px 18px 22px;
-  border-radius: $radius-card;
+
   border: 1px dashed rgba(219, 200, 181, 0.9);
   background: rgba(255, 255, 255, 0.5);
 
@@ -152,7 +151,6 @@ a.link {
   gap: 12px;
 
   @media (min-width: 720px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

@@ -10,6 +10,16 @@ import backgoundImage4 from "../../assets/background-images/bild2.jpg";
 import backgoundImage5 from "../../assets/background-images/bild3.jpg";
 import backgoundImage6 from "../../assets/background-images/bild4.jpg";
 import backgoundImage7 from "../../assets/background-images/bild5.jpg";
+import hjl1 from "../../assets/background-images/hj1.jpg";
+import hjl2 from "../../assets/background-images/hj2.jpg";
+import hjl3 from "../../assets/background-images/hj3.jpg";
+import hjl4 from "../../assets/background-images/hj4.jpg";
+import hjl5 from "../../assets/background-images/hj5.jpg";
+import hjl6 from "../../assets/background-images/hj6.jpg";
+import hjl7 from "../../assets/background-images/hj7.jpg";
+import hjl8 from "../../assets/background-images/hj8.jpg";
+import hjl9 from "../../assets/background-images/hj9.jpg";
+import hjl10 from "../../assets/background-images/hl10.jpg";
 
 // Importera fler bilder här när du har dem
 // import heroImage2 from "../../assets/hero2.jpg";
@@ -52,6 +62,16 @@ export function Hero({ wedding }: HeroProps) {
     backgoundImage4,
     backgoundImage5,
     backgoundImage7,
+    hjl1,
+    hjl2,
+    hjl3,
+    hjl4,
+    hjl5,
+    hjl6,
+    hjl7,
+    hjl8,
+    hjl9,
+    hjl10,
   ];
 
   const mobileImages = [
@@ -62,6 +82,16 @@ export function Hero({ wedding }: HeroProps) {
     backgoundImage4,
     backgoundImage5,
     backgoundImage6,
+    hjl1,
+    hjl2,
+    hjl3,
+    hjl4,
+    hjl5,
+    hjl6,
+    hjl7,
+    hjl8,
+    hjl9,
+    hjl10,
   ];
 
   const [imageIndex, setImageIndex] = useState(0);

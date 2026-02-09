@@ -1,7 +1,7 @@
 import { WEDDING } from "../../../weddingConfig";
 import { RsvpForm } from "../../Form/RsvpForm";
 import { ParallaxBanner } from "react-scroll-parallax";
-import rsvpBg from "../../../assets/hossmoka.jpg";
+import rsvpBg from "../../../assets/background-images/puss.jpg";
 
 import "../section.scss";
 import "./rsvp-section.scss";

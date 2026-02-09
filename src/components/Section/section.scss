@@ -40,4 +40,11 @@
       margin-bottom: 10px;
     }
   }
+  &.rsvpSection {
+    max-width: unset;
+    margin: 0 -10px 0;
+    p {
+      text-align: center;
+    }
+  }
 }

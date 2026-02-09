@@ -130,7 +130,13 @@ export function Information() {
       <div className="grid">
         <div className="card card--info transport-card">
           <h3>Hur tar man sig dit?</h3>
-          <p>Adresseb jiner gör</p>
+          <p>
+            Hossmo gård —{" "}
+            <a href={WEDDING.maps.partyLink} target="_blank" rel="noreferrer">
+              Öppna i Google Maps
+            </a>
+          </p>
+          <p className="muted">Hossmo Gård 140, 388 92 Hossmo</p>
           <div className="info-grid">
             {/* Buss */}
             <div className="info-item">
