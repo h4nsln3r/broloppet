@@ -48,11 +48,53 @@ export function Hero({ wedding }: HeroProps) {
   const containerRef = useRef<HTMLElement | null>(null);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Preload all images to prevent flickering
+  useEffect(() => {
+    const allImages = [
+      backgoundImage,
+      backgoundImage1,
+      backgoundImage2,
+      backgoundImage3,
+      backgoundImage4,
+      backgoundImage5,
+      backgoundImage6,
+      backgoundImage7,
+      hjl1,
+      hjl2,
+      hjl3,
+      hjl4,
+      hjl5,
+      hjl6,
+      hjl7,
+      hjl8,
+      hjl9,
+      hjl10,
+    ];
+
+    let loadedCount = 0;
+    const totalImages = allImages.length;
+
+    const onImageLoad = () => {
+      loadedCount++;
+      if (loadedCount === totalImages) {
+        setImagesLoaded(true);
+      }
+    };
+
+    allImages.forEach((src) => {
+      const img = new Image();
+      img.onload = onImageLoad;
+      img.onerror = onImageLoad; // Count failed images too to not get stuck
+      img.src = src;
+    });
   }, []);
 
   const desktopImages = [
@@ -124,7 +166,11 @@ export function Hero({ wedding }: HeroProps) {
       <Parallax speed={-50} className="hero__parallax" aria-hidden="true">
         <div
           className="hero__bg"
-          style={{ backgroundImage: `url('${currentImage}')` }}
+          style={{
+            backgroundImage: imagesLoaded ? `url('${currentImage}')` : undefined,
+            opacity: imagesLoaded ? 1 : 0,
+            transition: "opacity 0.3s ease-in-out",
+          }}
         />
       </Parallax>
 
