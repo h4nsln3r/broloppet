@@ -1,35 +1,31 @@
 // src/components/Section/Info/index.tsx
-import { useState } from "react";
-import { WEDDING } from "../../../weddingConfig";
+import { useState } from 'react';
+import { WEDDING } from '../../../weddingConfig';
 // import { FiClock } from 'react-icons/fi';
-import hossmoKA from "../../../assets/hossmoka.jpg";
+import hossmoKA from '../../../assets/hossmoka.jpg';
 
-import "../section.scss";
-import "./info-section.scss";
-import { PlaceToggle, type MapTarget } from "./PlaceToggle";
-import { addQueryParam } from "../../Map/utils";
+import '../section.scss';
+import './info-section.scss';
+import { PlaceToggle, type MapTarget } from './PlaceToggle';
+import { addQueryParam } from '../../Map/utils';
 
 export function Information() {
-  const [activeMap, setActiveMap] = useState<MapTarget>("ceremony");
+  const [activeMap, setActiveMap] = useState<MapTarget>('ceremony');
 
-  const defaultEmbed = addQueryParam(WEDDING.maps.embedSrc, "t", "k");
+  const defaultEmbed = addQueryParam(WEDDING.maps.embedSrc, 't', 'k');
   const ceremonyEmbed = addQueryParam(
-    addQueryParam(WEDDING.maps.ceremonyLink, "output", "embed"),
-    "t",
-    "k",
+    addQueryParam(WEDDING.maps.ceremonyLink, 'output', 'embed'),
+    't',
+    'k'
   );
   const partyEmbed = addQueryParam(
-    addQueryParam(WEDDING.maps.partyLink, "output", "embed"),
-    "t",
-    "k",
+    addQueryParam(WEDDING.maps.partyLink, 'output', 'embed'),
+    't',
+    'k'
   );
 
   const mapSrc =
-    activeMap === "ceremony"
-      ? ceremonyEmbed
-      : activeMap === "party"
-        ? partyEmbed
-        : defaultEmbed;
+    activeMap === 'ceremony' ? ceremonyEmbed : activeMap === 'party' ? partyEmbed : defaultEmbed;
 
   return (
     <section className="section" id="info">
@@ -48,7 +44,7 @@ export function Information() {
               <div className="time-col">
                 <span>
                   {/* {WEDDING.ceremony.time} — Vigsel */}
-                  Vigseln börjar kl. {WEDDING.ceremony.time} i{" "}
+                  Vigseln börjar kl. {WEDDING.ceremony.time} i{' '}
                   <PlaceToggle
                     target="ceremony"
                     activeMap={activeMap}
@@ -63,18 +59,13 @@ export function Information() {
             </li>
           </ul>
 
-          <img
-            className="church-main"
-            src={hossmoKA}
-            alt="Hossmo kyrka"
-            loading="lazy"
-          />
+          <img className="church-main" src={hossmoKA} alt="Hossmo kyrka" loading="lazy" />
 
           <ul>
             <li className="time-row">
               <div className="time-col">
                 <span className="">
-                  Bröllopsfesten fortsätter på{" "}
+                  Bröllopsfesten fortsätter på{' '}
                   <PlaceToggle
                     target="party"
                     activeMap={activeMap}
@@ -82,7 +73,7 @@ export function Information() {
                     className=""
                   >
                     {WEDDING.party.place}.
-                  </PlaceToggle>{" "}
+                  </PlaceToggle>{' '}
                   <br />
                   Det är en kort promenad från kyrkan.
                 </span>
@@ -100,12 +91,11 @@ export function Information() {
           </ul>
         </div>
 
-        {WEDDING.maps.embedSrc.includes("PASTE_") ? (
+        {WEDDING.maps.embedSrc.includes('PASTE_') ? (
           <div className="card map-card">
             <div className="mapPlaceholder">
               <p className="muted">
-                Lägg in en Google Maps embed-URL i{" "}
-                <code>WEDDING.maps.embedSrc</code>.
+                Lägg in en Google Maps embed-URL i <code>WEDDING.maps.embedSrc</code>.
               </p>
             </div>
           </div>
@@ -131,7 +121,7 @@ export function Information() {
         <div className="card card--info transport-card">
           <h3>Hur tar man sig dit?</h3>
           <p>
-            Hossmo gård —{" "}
+            Hossmo gård —{' '}
             <a href={WEDDING.maps.partyLink} target="_blank" rel="noreferrer">
               Öppna i Google Maps
             </a>
@@ -142,10 +132,10 @@ export function Information() {
             <div className="info-item">
               <h4>Buss</h4>
               <p>
-                Från Kalmar Centralstation går KLT:s linje <strong>403</strong>{" "}
-                mot Ljungbyholm / Torsås.
+                Från Kalmar Centralstation går KLT:s linje <strong>403</strong> mot Ljungbyholm /
+                Torsås.
                 <br />
-                Kliv av vid hållplats{" "}
+                Kliv av vid hållplats{' '}
                 <PlaceToggle
                   target="ceremony"
                   activeMap={activeMap}
@@ -153,18 +143,14 @@ export function Information() {
                   className=""
                 >
                   Hossmo kyrka
-                </PlaceToggle>{" "}
+                </PlaceToggle>{' '}
                 eller <strong>Hossmo E22</strong>.
                 <br />
                 Resan tar ca 20 minuter.
                 <br />
                 <br />
-                Se tidtabell på KLT-appen eller på{" "}
-                <a
-                  href="https://www.kalmarlanstrafik.se"
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                Se tidtabell på KLT-appen eller på{' '}
+                <a href="https://www.kalmarlanstrafik.se" target="_blank" rel="noreferrer">
                   kalmarlanstrafik.se
                 </a>
                 . Biljett köps via appen eller ombord på bussen.
@@ -175,7 +161,7 @@ export function Information() {
             <div className="info-item">
               <h4>Bil</h4>
               <p>
-                Det finns parkering både vid{" "}
+                Det finns parkering både vid{' '}
                 <PlaceToggle
                   target="ceremony"
                   activeMap={activeMap}
@@ -183,8 +169,8 @@ export function Information() {
                   className=""
                 >
                   Hossmo kyrka
-                </PlaceToggle>{" "}
-                och{" "}
+                </PlaceToggle>{' '}
+                och{' '}
                 <PlaceToggle
                   target="party"
                   activeMap={activeMap}
@@ -201,11 +187,10 @@ export function Information() {
               <h4>Taxi</h4>
               <p>Förslag:</p>
               <p>
-                <strong>Sverigetaxi Kalmar:</strong>{" "}
+                <strong>Sverigetaxi Kalmar:</strong>{' '}
                 <a href="tel:0480444444">0480-44&nbsp;44&nbsp;44</a>
                 <br />
-                <strong>Kalmar Taxi:</strong>{" "}
-                <a href="tel:048028200">0480-28&nbsp;200</a>
+                <strong>Kalmar Taxi:</strong> <a href="tel:048028200">0480-28&nbsp;200</a>
               </p>
             </div>
           </div>
@@ -216,7 +201,7 @@ export function Information() {
         <div className="info-grid">
           <div className="info-item">
             <h4>Klädkod</h4>
-            <p>Kavaj</p>
+            <h4 className="muted">Kavaj</h4>
           </div>
 
           <div className="info-item">
@@ -229,8 +214,7 @@ export function Information() {
             <p>
               Den största gåvan för oss är att få fira dagen tillsammans med er.
               <br />
-              Om ni vill ge en present tar vi tacksamt emot bidrag till vår
-              bröllopsresa till Japan.
+              Om ni vill ge en present tar vi tacksamt emot bidrag till vår bröllopsresa till Japan.
               <br /> Swish kan skickas till vår toastmadame Jenny:
               <br /> 073 622 67 58.
             </p>
