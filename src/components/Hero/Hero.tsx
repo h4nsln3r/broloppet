@@ -83,9 +83,9 @@ export function Hero({ wedding }: HeroProps) {
   };
 
   const handleScrollDown = () => {
-    const welcomeBlock = document.querySelector(".welcomeBlock");
-    if (welcomeBlock) {
-      welcomeBlock.scrollIntoView({ behavior: "smooth" });
+    const content = document.querySelector(".content");
+    if (content) {
+      content.scrollIntoView({ behavior: "smooth" });
     }
   };
 

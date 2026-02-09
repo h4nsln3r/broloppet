@@ -1,8 +1,8 @@
 // src/components/Section/Info/info-section.scss
-@use '../../../styles/variables' as *;
-@use 'sass:color' as color;
+@use "../../../styles/variables" as *;
+@use "sass:color" as color;
 .info-item {
-  font-size: 1.05rem;
+  font-size: 1rem;
 }
 .grid--times {
   display: grid;
@@ -40,7 +40,7 @@
       padding-left: 0;
       margin: 6px 0 0;
       font-family: $font-body;
-      font-size: 1.25rem;
+      font-size: 1rem;
 
       li.time-row {
         display: flex;
@@ -71,7 +71,7 @@
 
     .highlight-info {
       font-family: $font-heading;
-      font-size: 1.05rem;
+      font-size: 1rem;
     }
 
     .church-main {
@@ -127,7 +127,7 @@
       }
 
       button.active,
-      button[aria-pressed='true'] {
+      button[aria-pressed="true"] {
         background: #fff;
         border-color: transparent;
         box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
@@ -135,7 +135,7 @@
       }
     }
 
-    .place-text[role='button'] {
+    .place-text[role="button"] {
       cursor: pointer;
       text-decoration: underline;
     }
@@ -174,7 +174,7 @@
 }
 
 .place-text {
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--muted);
   font-family: $font-body;
   text-transform: uppercase;

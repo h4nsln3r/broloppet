@@ -1,4 +1,4 @@
-@use './variables' as *;
+@use "./variables" as *;
 
 :root {
   --bg: #{$bg-color};
@@ -29,7 +29,11 @@ body {
 
 .content {
   flex: 1;
-  padding: 0 20px 40px;
+
+  padding: 0 10px 20px;
+  @media (min-width: 720px) {
+    padding: 0 20px 40px;
+  }
 }
 
 .muted {
@@ -40,43 +44,41 @@ body {
   font-size: 0.75rem;
 }
 
-.welcomeBlock {
+.welcome {
   text-align: center;
   margin: 20px 0 30px;
   display: grid;
   justify-items: center;
   gap: 10px;
 
+  &__title {
+    margin: 0;
+    font-size: 1.8rem;
+    font-family: "Cormorant Garamond", $font-heading;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+
+    @media (min-width: 720px) {
+      font-size: 2rem;
+    }
+  }
   hr {
     border: 1px gray solid black;
     width: 50%;
     margin-top: 20px;
   }
-}
-
-.welcome {
-  margin: 0;
-  font-size: 1.8rem;
-  font-family: 'Cormorant Garamond', $font-heading;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-
-  @media (min-width: 720px) {
-    font-size: 2rem;
+  &__heart {
+    width: 46px;
+    height: 46px;
+    opacity: 0.9;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.08));
   }
-}
 
-.welcomeBlock__heart {
-  width: 46px;
-  height: 46px;
-  opacity: 0.9;
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.08));
-}
-
-.welcomeBlock__intro {
-  max-width: 60ch;
-  margin: 0;
-  line-height: 1.55;
+  &__intro {
+    max-width: 60ch;
+    margin: 0;
+    line-height: 1.55;
+  }
 }
 
 .grid {

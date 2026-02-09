@@ -4,7 +4,7 @@ import { Card } from "../../Card";
 
 export function ToastMasters() {
   return (
-    <section className="section">
+    <section className="section section--toastmasters">
       <h2>Tal & underhållning</h2>
       <Card>
         <p>
@@ -37,7 +37,6 @@ export function ToastMasters() {
           </div>
 
           <div className="info-item">
-            <h4>Tider</h4>
             <p className="muted">
               {WEDDING.toastInfo.note}
               <br />

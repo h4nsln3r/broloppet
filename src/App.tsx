@@ -4,8 +4,7 @@ import { WEDDING } from "./weddingConfig";
 import { Information } from "./components/Section/Info";
 import { ToastMasters } from "./components/Section/Toast";
 import { RSVP } from "./components/Section/RSVP";
-import { Countdown } from "./components/Countdown/Countdown";
-import heartMark from "./assets/icons/heart-mark.svg";
+import { Welcome } from "./components/Section/Welcome";
 
 export default function App() {
   return (
@@ -13,21 +12,9 @@ export default function App() {
       <Hero wedding={WEDDING} />
 
       <main className="content">
-        <div className="welcomeBlock">
-          <h1 className="welcome">Välkommen till vårt bröllop!</h1>
-          <img className="welcomeBlock__heart" src={heartMark} alt="<3" />
-          <p className="welcomeBlock__intro muted">
-            Vi skulle bli så glada om ni vill fira dagen med oss. Här hittar ni
-            tider, plats, toastmasters och OSA – allt du behöver inför en fin
-            dag tillsammans.
-          </p>
-          <Countdown />
-          <hr />
-        </div>
+        <Welcome />
         <Information />
-
         <ToastMasters />
-
         <RSVP />
       </main>
 
