@@ -26,20 +26,25 @@
     text-transform: uppercase;
     margin: 0 0 10px;
   }
+
   &--toastmasters {
     h4 {
       font-size: 20px;
       font-family: $font-heading;
-      margin-bottom: 0;
+      margin-bottom: 10px;
       margin-top: 10px;
     }
     p:first-child {
       margin-top: 0;
     }
     .toastmaster-list {
-      margin-bottom: 10px;
+      margin-bottom: 20px;
+      li {
+        margin-bottom: 10px;
+      }
     }
   }
+
   &.rsvpSection {
     max-width: unset;
     margin: 0 -10px 0;
@@ -47,6 +52,4 @@
       text-align: center;
     }
   }
-}
-.asd {
 }

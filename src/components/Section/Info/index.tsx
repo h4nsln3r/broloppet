@@ -221,6 +221,52 @@ export function Information() {
           </div>
         </div>
       </div>
+      <br />
+      <div className="card card--info">
+        <h3>Hotell</h3>
+        <p>
+          <strong>Profilhotels Calmar Stadshotell</strong>
+          <br />
+          Stortorget 14, SE-392 32, Kalmar
+        </p>
+        <p>
+          Vi bor på Calmar Stadshotell på brölloppsnatten. Om ni vill bo där
+          tillsammans med oss kan ni boka med vår specialkod:
+        </p>
+        <div className="info-grid">
+          <div className="info-item">
+            <h4>Bokningskod</h4>
+            <p>
+              <strong>Hannes&Julia2026</strong>
+            </p>
+            <p className="muted">
+              10% rabatt på samtliga rumskategorier under Flexible Rate
+            </p>
+          </div>
+
+          <div className="info-item">
+            <h4>Villkor</h4>
+            <p className="muted">
+              Fri avbokning fram till ankomstdagen kl. 14:00
+              <br />
+              Gäller perioden 28–30 augusti
+              <br />
+              Kod aktiv fram till 31 juli
+            </p>
+          </div>
+
+          <div className="info-item">
+            <h4>Bokning</h4>
+            <p>
+              Gå in på{" "}
+              <a href="https://www.ligula.se" target="_blank" rel="noreferrer">
+                ligula.se
+              </a>{" "}
+              och fyll i bokningskoden vid bokningen.
+            </p>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

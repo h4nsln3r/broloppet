@@ -84,10 +84,13 @@
     font-family: $font-heading;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    font-size: 1.2rem;
+    font-size: 2rem;
     margin: 0;
     text-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
     color: rgb(129, 4, 4);
+    @media (max-width: 768px) {
+      font-size: 1.2rem;
+    }
   }
 
   &__scroll-arrow {
