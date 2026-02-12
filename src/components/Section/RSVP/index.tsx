@@ -9,7 +9,7 @@ import "./rsvp-section.scss";
 export function RSVP() {
   return (
     <section className="section rsvpSection" id="rsvp">
-      <h2>OSA / RSVP</h2>
+      <h2>OSA</h2>
       <p className="muted">
         Svara om du/ni kommer eller inte. Fyll gärna i allergier och
         matpreferenser.

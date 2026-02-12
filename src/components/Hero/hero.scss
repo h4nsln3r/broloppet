@@ -59,6 +59,8 @@
   &__header {
     position: relative;
     z-index: 1;
+    padding: 32px 24px;
+
     h1 {
       letter-spacing: 0.05em;
       font-family: $font-romantic;
@@ -66,7 +68,7 @@
       font-size: clamp(10rem, 4vw, 2.3rem);
       margin: 0 0 4px;
       color: rgb(129, 4, 4);
-      text-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+      text-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
       @media (max-width: 768px) {
         font-size: clamp(6rem, 4vw, 5rem);
       }

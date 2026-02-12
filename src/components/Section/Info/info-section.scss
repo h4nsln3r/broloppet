@@ -80,7 +80,15 @@
       max-width: 640px;
       height: auto;
       margin: 0px 0 10px;
-      border: 1px solid color.adjust($accent, $lightness: 6%);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      // border-radius: $radius-card;
+      box-shadow: $shadow-sm;
+      transition: all var(--transition-base);
+
+      &:hover {
+        box-shadow: $shadow-md;
+        border-color: rgba(255, 255, 255, 0.4);
+      }
     }
   }
 
@@ -118,19 +126,22 @@
       margin-top: 8px;
 
       button {
-        border: 1px solid rgba(199, 178, 158, 0.9);
-        background: transparent;
-        padding: 8px 10px;
-        border-radius: 999px;
+        border: none;
+        background: rgba(255, 255, 255, 0.4);
+        padding: 9px 12px;
+        border-radius: $radius-full;
         cursor: pointer;
         font-size: 0.9rem;
+        transition: all var(--transition-fast);
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
       }
 
       button.active,
       button[aria-pressed="true"] {
-        background: #fff;
-        border-color: transparent;
-        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+        background: rgba(255, 255, 255, 0.95);
+        border-color: rgba(255, 255, 255, 0.3);
+        box-shadow: $shadow-sm;
         font-weight: 600;
       }
     }
@@ -179,18 +190,20 @@
   font-family: $font-body;
   text-transform: uppercase;
   font-weight: 600;
+  transition: all var(--transition-fast);
+  cursor: pointer;
 
   &:hover {
     text-decoration: underline;
-    cursor: pointer;
-    color: black;
+    color: var(--text);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
   }
   &.active {
-    color: black;
+    color: var(--text);
     &:hover {
-      text-decoration: none;
-      cursor: none;
-      color: black;
+      text-decoration: underline;
+      color: var(--text);
     }
   }
 }

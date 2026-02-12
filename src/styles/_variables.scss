@@ -5,9 +5,32 @@ $accent: #b8ab9b;
 $text-color: #2f2620;
 $muted-color: rgba(47, 38, 32, 0.65);
 
+// Radius-system
+$radius-sm: 8px;
+$radius-md: 12px;
 $radius-card: 20px;
-$shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.08);
+$radius-xl: 24px;
+$radius-full: 999px;
 
+// Shadow-system (Apple-inspired)
+$shadow-xs: 0 2px 8px rgba(0, 0, 0, 0.06);
+$shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+$shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.08);
+$shadow-md: 0 12px 32px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.12);
+$shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.08);
+
+// Glassmorphism-values
+$glass-bg: rgba(255, 255, 255, 0.8);
+$glass-backdrop: 10px;
+$glass-border: rgba(255, 255, 255, 0.3);
+
+// Transitions
+$transition-fast: 0.15s ease-out;
+$transition-base: 0.25s ease-out;
+$transition-slow: 0.4s ease-out;
+
+// Font Stack
 $font-heading: "Playfair Display", "Times New Roman", serif;
 $font-romantic: "Parisienne", cursive;
 $font-body:
@@ -16,3 +39,11 @@ $font-body:
   BlinkMacSystemFont,
   "Segoe UI",
   sans-serif;
+
+// Font-sizes scale
+$fs-xs: 0.75rem;
+$fs-sm: 0.875rem;
+$fs-base: 1rem;
+$fs-lg: 1.125rem;
+$fs-xl: 1.25rem;
+$fs-2xl: 1.5rem;

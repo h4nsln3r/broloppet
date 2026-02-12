@@ -10,7 +10,7 @@ type ScrollToRsvpLetterProps = {
 
 export function ScrollToRsvpLetter({
   targetId,
-  label = "OSA / RSVP",
+  label = "OSA",
 }: ScrollToRsvpLetterProps) {
   function scrollToTarget() {
     const el = document.getElementById(targetId);
