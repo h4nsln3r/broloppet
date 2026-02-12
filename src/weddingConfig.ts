@@ -2,7 +2,7 @@
 export const WEDDING = {
   couple: "Hannes & Julia",
   // Ändra datumtexten om ni vill ha annan formulering
-  dateLong: "Fredag 29 augusti 2026",
+  dateLong: "Lördag 29 augusti 2026",
   ceremony: {
     place: "Hossmo kyrka",
     time: "14:00",
