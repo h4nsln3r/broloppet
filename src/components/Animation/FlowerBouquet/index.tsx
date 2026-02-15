@@ -1,3 +1,5 @@
+import "./flowerbouquet.scss";
+
 type BouquetProps = {
   className?: string;
   /** Bredd i px eller css-string */
