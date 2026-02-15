@@ -8,7 +8,7 @@ import "../section.scss";
 import "./info-section.scss";
 import { type MapTarget } from "./PlaceToggle";
 import { addQueryParam } from "../../Map/utils";
-import FlowerBouquet from "../../Animation/FlowerBouquet";
+// import FlowerBouquet from "../../Animation/FlowerBouquet";
 
 export function Information() {
   const [activeMap, setActiveMap] = useState<MapTarget>("ceremony");
