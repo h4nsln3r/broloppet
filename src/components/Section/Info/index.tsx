@@ -6,11 +6,42 @@ import hossmoKA from "../../../assets/hossmoka.jpg";
 
 import "../section.scss";
 import "./info-section.scss";
-import { PlaceToggle, type MapTarget } from "./PlaceToggle";
+import { type MapTarget } from "./PlaceToggle";
 import { addQueryParam } from "../../Map/utils";
+import FlowerBouquet from "../../Animation/FlowerBouquet";
 
 export function Information() {
   const [activeMap, setActiveMap] = useState<MapTarget>("ceremony");
+
+  const handleSetActiveMap = (target: MapTarget) => {
+    setActiveMap(target);
+    const el = document.querySelector(".mapWrap, .map-card");
+    if (!el) return;
+    const smoothScrollTo = (targetEl: Element, duration = 700) => {
+      const startY = window.scrollY || window.pageYOffset;
+      const rect = targetEl.getBoundingClientRect();
+      const targetY = rect.top + startY - 24; // offset a little from top
+      const distance = targetY - startY;
+      let startTime: number | null = null;
+
+      const easeInOutCubic = (t: number) =>
+        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+      const step = (timestamp: number) => {
+        if (startTime === null) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = easeInOutCubic(progress);
+        window.scrollTo(0, Math.round(startY + distance * eased));
+        if (elapsed < duration) window.requestAnimationFrame(step);
+      };
+
+      window.requestAnimationFrame(step);
+    };
+
+    // small delay to allow layout changes (iframe src swap) to settle
+    setTimeout(() => smoothScrollTo(el, 700), 80);
+  };
 
   const defaultEmbed = addQueryParam(WEDDING.maps.embedSrc, "t", "k");
   const ceremonyEmbed = addQueryParam(
@@ -47,16 +78,13 @@ export function Information() {
             <li className="time-row">
               <div className="time-col">
                 <span>
-                  {/* {WEDDING.ceremony.time} — Vigsel */}
                   Vigseln börjar kl. {WEDDING.ceremony.time} i{" "}
-                  <PlaceToggle
-                    target="ceremony"
-                    activeMap={activeMap}
-                    setActiveMap={setActiveMap}
-                    className=""
+                  <button
+                    className={`place-button ${activeMap === "ceremony" ? "active" : ""}`}
+                    onClick={() => handleSetActiveMap("ceremony")}
                   >
                     {WEDDING.ceremony.place}
-                  </PlaceToggle>
+                  </button>
                   . Se till att vara där senast 13:45.
                 </span>
               </div>
@@ -64,7 +92,7 @@ export function Information() {
           </ul>
 
           <img
-            className="church-main"
+            className={`church-main ${activeMap === "ceremony" ? "active" : ""}`}
             src={hossmoKA}
             alt="Hossmo kyrka"
             loading="lazy"
@@ -75,23 +103,20 @@ export function Information() {
               <div className="time-col">
                 <span className="">
                   Bröllopsfesten fortsätter på{" "}
-                  <PlaceToggle
-                    target="party"
-                    activeMap={activeMap}
-                    setActiveMap={setActiveMap}
-                    className=""
+                  <button
+                    className={`place-button ${activeMap === "party" ? "active" : ""}`}
+                    onClick={() => handleSetActiveMap("party")}
                   >
-                    {WEDDING.party.place}.
-                  </PlaceToggle>{" "}
-                  <br />
-                  Det är en kort promenad från kyrkan.
+                    {WEDDING.party.place}
+                  </button>
+                  . Det är en kort promenad från kyrkan.
                 </span>
               </div>
             </li>
 
             <li>
               <img
-                className="church-main"
+                className={`church-main ${activeMap === "party" ? "active" : ""}`}
                 src="https://www.hossmogard.se/media/s11fy3cd/hossmogard_house_tny.webp?width=1300&height=696&v=1dc2df4c2cbab70"
                 alt="Hossmo Gård"
                 loading="lazy"
@@ -110,18 +135,16 @@ export function Information() {
             </div>
           </div>
         ) : (
-          <>
-            <div className="mapWrap">
-              <iframe
-                src={mapSrc}
-                width="100%"
-                height="100%"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Karta"
-              />
-            </div>
-          </>
+          <div className="mapWrap">
+            <iframe
+              src={mapSrc}
+              width="100%"
+              height="100%"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Karta"
+            />
+          </div>
         )}
       </div>
 
@@ -146,14 +169,12 @@ export function Information() {
                 mot Ljungbyholm / Torsås.
                 <br />
                 Kliv av vid hållplats{" "}
-                <PlaceToggle
-                  target="ceremony"
-                  activeMap={activeMap}
-                  setActiveMap={setActiveMap}
-                  className=""
+                <button
+                  className={`place-button ${activeMap === "ceremony" ? "active" : ""}`}
+                  onClick={() => handleSetActiveMap("ceremony")}
                 >
                   Hossmo kyrka
-                </PlaceToggle>{" "}
+                </button>{" "}
                 eller <strong>Hossmo E22</strong>.
                 <br />
                 Resan tar ca 20 minuter.
@@ -176,23 +197,20 @@ export function Information() {
               <h4>Bil</h4>
               <p>
                 Det finns parkering både vid{" "}
-                <PlaceToggle
-                  target="ceremony"
-                  activeMap={activeMap}
-                  setActiveMap={setActiveMap}
-                  className=""
+                <button
+                  className={`place-button ${activeMap === "ceremony" ? "active" : ""}`}
+                  onClick={() => handleSetActiveMap("ceremony")}
                 >
                   Hossmo kyrka
-                </PlaceToggle>{" "}
+                </button>{" "}
                 och{" "}
-                <PlaceToggle
-                  target="party"
-                  activeMap={activeMap}
-                  setActiveMap={setActiveMap}
-                  className=""
+                <button
+                  className={`place-button ${activeMap === "party" ? "active" : ""}`}
+                  onClick={() => handleSetActiveMap("party")}
                 >
                   Hossmo gård
-                </PlaceToggle>
+                </button>
+                .
               </p>
             </div>
 
@@ -235,6 +253,7 @@ export function Information() {
               <br /> 073 622 67 58.
             </p>
           </div>
+          {/* <FlowerBouquet className="flower" speed={1} /> */}
         </div>
       </div>
       <br />
