@@ -1,7 +1,6 @@
 // src/weddingConfig.ts
 export const WEDDING = {
   couple: "Hannes & Julia",
-  // Ändra datumtexten om ni vill ha annan formulering
   dateLong: "Lördag 29 augusti 2026",
   ceremony: {
     place: "Hossmo kyrka",
@@ -13,7 +12,7 @@ export const WEDDING = {
     ends: "02:00",
   },
   osaDeadline: "5 Juli 2026",
-  dressCode: "Sommarfin", // t.ex. Kavaj / Sommarfin / Valfritt
+  dressCode: "Sommarfin",
   childrenPolicy: "Vi önskar en barnfri dag/kväll ❤️",
   gifts: "Vi önskar oss gärna ett bidrag till vår bröllopsresa.",
   toastmasters: [
@@ -38,10 +37,8 @@ export const WEDDING = {
     "Taxi: Till exempel Sverigetaxi Kalmar 0480-44 44 44 eller Kalmar Taxi 0480-28 200 (förboka gärna).",
   ],
   maps: {
-    // Tips: använd “Dela” i Google Maps och ta en länk till kyrkan + gården
     ceremonyLink: "https://maps.google.com/?q=Hossmo+kyrka",
     partyLink: "https://maps.google.com/?q=Hossmo+g%C3%A5rd",
-    // Embed: i Google Maps -> Dela -> “Bädda in en karta” -> kopiera src-URL
     embedSrc:
       "https://www.google.com/maps?q=Hossmo%20G%C3%A5rd%2C%20Kalmar&output=embed",
   },
