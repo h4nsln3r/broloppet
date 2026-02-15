@@ -1,5 +1,3 @@
-import React from "react";
-
 type BouquetProps = {
   className?: string;
   /** Bredd i px eller css-string */
