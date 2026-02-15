@@ -102,7 +102,7 @@ export function Information() {
             <li className="time-row">
               <div className="time-col">
                 <span className="">
-                  Bröllopsfesten fortsätter på{" "}
+                  Bröllopsfesten fortsätter sen på{" "}
                   <button
                     className={`place-button ${activeMap === "party" ? "active" : ""}`}
                     onClick={() => handleSetActiveMap("party")}
@@ -154,7 +154,13 @@ export function Information() {
         <div className="card card--info transport-card">
           <h3>Hur tar man sig dit?</h3>
           <p>
-            Hossmo gård —{" "}
+            <button
+              className={`place-button ${activeMap === "party" ? "active" : ""}`}
+              onClick={() => handleSetActiveMap("party")}
+            >
+              {WEDDING.party.place}
+            </button>{" "}
+            —{" "}
             <a href={WEDDING.maps.partyLink} target="_blank" rel="noreferrer">
               Öppna i Google Maps
             </a>
