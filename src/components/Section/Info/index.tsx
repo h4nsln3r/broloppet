@@ -268,8 +268,14 @@ export function Information() {
               <br />
               Om ni vill ge en present tar vi tacksamt emot bidrag till vår
               bröllopsresa till Japan.
-              <br /> Swish kan skickas till vår toastmadame Jenny:
-              <br /> 073 622 67 58.
+              <br />
+              Swish kan skickas till vår toastmadame{" "}
+              <span className="present-contact">
+                <span className="present-contact__name">Jenny</span>
+                <a href="tel:0736226758" className="present-contact__tel">
+                  073 622 67 58
+                </a>
+              </span>
             </p>
           </div>
           {/* <FlowerBouquet className="flower" speed={1} /> */}

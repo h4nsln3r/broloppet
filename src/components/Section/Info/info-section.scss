@@ -202,6 +202,41 @@
   }
 }
 
+/* Present – kontakt (Jenny + Swish-nummer) som en sammanhållen enhet */
+.present-contact {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  padding: 6px 12px 6px 10px;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: $radius-sm;
+
+  .present-contact__name {
+    font-family: $font-heading;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text);
+  }
+
+  .present-contact__tel {
+    font-size: 0.9rem;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: color var(--transition-fast);
+
+    &:hover {
+      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+  }
+}
+
 /* Hotell-kortet – samma look som transport och klädkod/barn/present */
 .card--hotell {
   .card--hotell__intro {
