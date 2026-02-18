@@ -1,6 +1,6 @@
 @use "../../../styles/variables" as *;
 
-/* Intro med mikrofonsikon */
+/* Intro med mikrofonsikon – på mobil full bredd för texten */
 .toast-intro {
   display: flex;
   align-items: flex-start;
@@ -19,6 +19,23 @@
   p {
     margin: 0;
     line-height: 1.65;
+    min-width: 0;
+  }
+
+  @media (max-width: 719px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    .toast-intro__icon {
+      margin-top: 0;
+    }
+
+    p {
+      text-align: center;
+      width: 100%;
+    }
   }
 }
 
