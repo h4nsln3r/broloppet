@@ -23,7 +23,7 @@ export const WEDDING = {
   toastmasters: [
     {
       name: "Jenny Griffin",
-      email: "jennygriffinlindahl@gmail.com",
+      email: "griffinlindahl@gmail.com",
       image: "JG.jpg",
     },
     {

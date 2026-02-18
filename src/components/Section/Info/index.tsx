@@ -1,5 +1,15 @@
 import { useState, useCallback } from "react";
-import { IoBus, IoCar, IoCall, IoShirtOutline, IoPeopleOutline, IoGiftOutline, IoKeyOutline, IoDocumentTextOutline, IoOpenOutline } from "react-icons/io5";
+import {
+  IoBus,
+  IoCar,
+  IoCall,
+  IoShirtOutline,
+  IoPeopleOutline,
+  IoGiftOutline,
+  IoKeyOutline,
+  IoDocumentTextOutline,
+  IoOpenOutline,
+} from "react-icons/io5";
 import { WEDDING } from "../../../config";
 import hossmoKA from "../../../assets/hossmoka.jpg";
 import { addQueryParam } from "../../Map/utils";
@@ -19,19 +29,19 @@ export function Information() {
       setActiveMap(target);
       setTimeout(() => scrollToMap(), 80);
     },
-    [scrollToMap]
+    [scrollToMap],
   );
 
   const defaultEmbed = addQueryParam(WEDDING.maps.embedSrc, "t", "k");
   const ceremonyEmbed = addQueryParam(
     addQueryParam(WEDDING.maps.ceremonyLink, "output", "embed"),
     "t",
-    "k"
+    "k",
   );
   const partyEmbed = addQueryParam(
     addQueryParam(WEDDING.maps.partyLink, "output", "embed"),
     "t",
-    "k"
+    "k",
   );
 
   const mapSrc =
@@ -271,7 +281,9 @@ export function Information() {
               <br />
               Swish kan skickas till vår toastmadame{" "}
               <span className="present-contact">
-                <span className="present-contact__name">Jenny</span>
+                <span className="present-contact__name">
+                  Jennifer (Jenny) Griffin Lindahl
+                </span>
                 <a href="tel:0736226758" className="present-contact__tel">
                   073 622 67 58
                 </a>
