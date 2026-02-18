@@ -1,58 +1,37 @@
-// src/components/Section/Info/index.tsx
-import { useState } from "react";
-import { WEDDING } from "../../../weddingConfig";
-// import { FiClock } from 'react-icons/fi';
+import { useState, useCallback } from "react";
+import { IoBus, IoCar, IoCall, IoShirtOutline, IoPeopleOutline, IoGiftOutline, IoKeyOutline, IoDocumentTextOutline, IoOpenOutline } from "react-icons/io5";
+import { WEDDING } from "../../../config";
 import hossmoKA from "../../../assets/hossmoka.jpg";
+import { addQueryParam } from "../../Map/utils";
+import { useScrollToMap } from "../../../hooks/useScrollToMap";
+import type { MapTarget } from "./types";
 
+import { SectionTitle } from "../SectionTitle";
 import "../section.scss";
 import "./info-section.scss";
-import { type MapTarget } from "./PlaceToggle";
-import { addQueryParam } from "../../Map/utils";
-// import FlowerBouquet from "../../Animation/FlowerBouquet";
 
 export function Information() {
   const [activeMap, setActiveMap] = useState<MapTarget>("ceremony");
+  const scrollToMap = useScrollToMap();
 
-  const handleSetActiveMap = (target: MapTarget) => {
-    setActiveMap(target);
-    const el = document.querySelector(".mapWrap, .map-card");
-    if (!el) return;
-    const smoothScrollTo = (targetEl: Element, duration = 700) => {
-      const startY = window.scrollY || window.pageYOffset;
-      const rect = targetEl.getBoundingClientRect();
-      const targetY = rect.top + startY - 24; // offset a little from top
-      const distance = targetY - startY;
-      let startTime: number | null = null;
-
-      const easeInOutCubic = (t: number) =>
-        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
-      const step = (timestamp: number) => {
-        if (startTime === null) startTime = timestamp;
-        const elapsed = timestamp - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = easeInOutCubic(progress);
-        window.scrollTo(0, Math.round(startY + distance * eased));
-        if (elapsed < duration) window.requestAnimationFrame(step);
-      };
-
-      window.requestAnimationFrame(step);
-    };
-
-    // small delay to allow layout changes (iframe src swap) to settle
-    setTimeout(() => smoothScrollTo(el, 700), 80);
-  };
+  const handleSetActiveMap = useCallback(
+    (target: MapTarget) => {
+      setActiveMap(target);
+      setTimeout(() => scrollToMap(), 80);
+    },
+    [scrollToMap]
+  );
 
   const defaultEmbed = addQueryParam(WEDDING.maps.embedSrc, "t", "k");
   const ceremonyEmbed = addQueryParam(
     addQueryParam(WEDDING.maps.ceremonyLink, "output", "embed"),
     "t",
-    "k",
+    "k"
   );
   const partyEmbed = addQueryParam(
     addQueryParam(WEDDING.maps.partyLink, "output", "embed"),
     "t",
-    "k",
+    "k"
   );
 
   const mapSrc =
@@ -64,7 +43,7 @@ export function Information() {
 
   return (
     <section className="section" id="info">
-      <h2>Information</h2>
+      <SectionTitle>Information</SectionTitle>
 
       <div className="grid grid--times">
         <div className="card times-card">
@@ -123,6 +102,23 @@ export function Information() {
               />
             </li>
           </ul>
+
+          <div className="place-buttons-row">
+            <button
+              type="button"
+              className={`place-button ${activeMap === "ceremony" ? "active" : ""}`}
+              onClick={() => handleSetActiveMap("ceremony")}
+            >
+              {WEDDING.ceremony.place}
+            </button>
+            <button
+              type="button"
+              className={`place-button ${activeMap === "party" ? "active" : ""}`}
+              onClick={() => handleSetActiveMap("party")}
+            >
+              {WEDDING.party.place}
+            </button>
+          </div>
         </div>
 
         {WEDDING.maps.embedSrc.includes("PASTE_") ? (
@@ -153,7 +149,7 @@ export function Information() {
       <div className="grid">
         <div className="card card--info transport-card">
           <h3>Hur tar man sig dit?</h3>
-          <p>
+          <p className="transport-card__destination">
             <button
               className={`place-button ${activeMap === "party" ? "active" : ""}`}
               onClick={() => handleSetActiveMap("party")}
@@ -165,11 +161,15 @@ export function Information() {
               Öppna i Google Maps
             </a>
           </p>
-          <p className="muted">Hossmo Gård 140, 388 92 Hossmo</p>
-          <div className="info-grid">
-            {/* Buss */}
-            <div className="info-item">
-              <h4>Buss</h4>
+          <p className="transport-card__address muted">
+            Hossmo Gård 140, 388 92 Hossmo
+          </p>
+          <div className="info-grid transport-grid">
+            <div className="transport-item info-item">
+              <h4 className="transport-item__title">
+                <IoBus className="transport-item__icon" aria-hidden />
+                Buss
+              </h4>
               <p>
                 Från Kalmar Centralstation går KLT:s linje <strong>403</strong>{" "}
                 mot Ljungbyholm / Torsås.
@@ -198,9 +198,11 @@ export function Information() {
               </p>
             </div>
 
-            {/* Bil */}
-            <div className="info-item">
-              <h4>Bil</h4>
+            <div className="transport-item info-item">
+              <h4 className="transport-item__title">
+                <IoCar className="transport-item__icon" aria-hidden />
+                Bil
+              </h4>
               <p>
                 Det finns parkering både vid{" "}
                 <button
@@ -220,9 +222,11 @@ export function Information() {
               </p>
             </div>
 
-            {/* Taxi */}
-            <div className="info-item">
-              <h4>Taxi</h4>
+            <div className="transport-item info-item">
+              <h4 className="transport-item__title">
+                <IoCall className="transport-item__icon" aria-hidden />
+                Taxi
+              </h4>
               <p>Förslag:</p>
               <p>
                 <strong>Sverigetaxi Kalmar:</strong>{" "}
@@ -236,20 +240,29 @@ export function Information() {
         </div>
       </div>
 
-      <div className="card card--info">
-        <div className="info-grid">
+      <div className="card card--info card--dress-barn-present">
+        <div className="info-grid info-grid--dress-barn-present">
           <div className="info-item">
-            <h4>Klädkod</h4>
+            <h4 className="info-item__title-with-icon">
+              <IoShirtOutline className="info-item__icon" aria-hidden />
+              Klädkod
+            </h4>
             <h4 className="muted">Kavaj</h4>
           </div>
 
           <div className="info-item">
-            <h4>Barn</h4>
+            <h4 className="info-item__title-with-icon">
+              <IoPeopleOutline className="info-item__icon" aria-hidden />
+              Barn
+            </h4>
             <p>{WEDDING.childrenPolicy}</p>
           </div>
 
-          <div className="info-item">
-            <h4>Present</h4>
+          <div className="info-item info-item--full-width">
+            <h4 className="info-item__title-with-icon">
+              <IoGiftOutline className="info-item__icon" aria-hidden />
+              Present
+            </h4>
             <p>
               Den största gåvan för oss är att få fira dagen tillsammans med er.
               <br />
@@ -263,21 +276,24 @@ export function Information() {
         </div>
       </div>
       <br />
-      <div className="card card--info">
+      <div className="card card--info card--hotell">
         <h3>Hotell</h3>
-        <p>
+        <p className="card--hotell__intro">
           Vi bor på Calmar Stadshotell på brölloppsnatten. Om ni vill bo där
           tillsammans med oss kan ni boka med vår specialkod:
         </p>
-        <p>
+        <p className="card--hotell__address">
           <strong>Profilhotels Calmar Stadshotell</strong>
           <br />
           Stortorget 14, SE-392 32, Kalmar
         </p>
 
-        <div className="info-grid">
+        <div className="info-grid info-grid--hotell">
           <div className="info-item">
-            <h4>Bokningskod</h4>
+            <h4 className="info-item__title-with-icon">
+              <IoKeyOutline className="info-item__icon" aria-hidden />
+              Bokningskod
+            </h4>
             <p>
               <strong>Hannes&Julia2026</strong>
             </p>
@@ -287,7 +303,10 @@ export function Information() {
           </div>
 
           <div className="info-item">
-            <h4>Villkor</h4>
+            <h4 className="info-item__title-with-icon">
+              <IoDocumentTextOutline className="info-item__icon" aria-hidden />
+              Villkor
+            </h4>
             <p className="muted">
               Fri avbokning fram till ankomstdagen kl. 14:00
               <br />
@@ -298,7 +317,10 @@ export function Information() {
           </div>
 
           <div className="info-item">
-            <h4>Bokning</h4>
+            <h4 className="info-item__title-with-icon">
+              <IoOpenOutline className="info-item__icon" aria-hidden />
+              Bokning
+            </h4>
             <p>
               Gå in på{" "}
               <a href="https://www.ligula.se" target="_blank" rel="noreferrer">

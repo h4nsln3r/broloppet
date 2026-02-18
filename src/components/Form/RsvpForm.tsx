@@ -20,6 +20,7 @@ const initialForm: RsvpFormValues = {
 
 const enableGoogleForm = true;
 
+/** Google Form för OSA – entry-ids måste matcha formuläret. */
 const GOOGLE_FORM_ACTION =
   "https://docs.google.com/forms/d/e/1FAIpQLSdsXv5hBd9mGLxadeNbuvAqMdFWqXiBglw1VhqsjXPn9p3Sdg/formResponse";
 

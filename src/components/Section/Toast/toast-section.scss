@@ -1,10 +1,96 @@
 @use "../../../styles/variables" as *;
 
+/* Intro med mikrofonsikon */
+.toast-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 8px;
+
+  .toast-intro__icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    color: var(--accent);
+    opacity: 0.9;
+    margin-top: 2px;
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.65;
+  }
+}
+
+/* Anmälan-låda – samma look som övriga info-lådor */
+.toast-deadline {
+  margin-top: 28px;
+  padding: 22px 24px 26px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+
+  @media (min-width: 720px) {
+    padding: 24px 26px 28px;
+  }
+
+  .toast-deadline__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: $font-heading;
+    letter-spacing: 0.08em;
+    color: var(--text);
+  }
+
+  .toast-deadline__icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    color: var(--accent);
+    opacity: 0.9;
+  }
+
+  .toast-deadline__note {
+    margin: 0 0 12px;
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+
+  .toast-deadline__date {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+}
+
+.toast-contact__heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 28px 0 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: $font-heading;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.toast-contact__icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--accent);
+  opacity: 0.9;
+}
+
 .toastmaster-contact {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  margin: 32px 0 24px;
+  margin: 0 0 24px;
 
   @media (max-width: 720px) {
     grid-template-columns: 1fr;
@@ -16,39 +102,36 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 0px 6px;
+  padding: 20px 12px 24px;
   background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid $glass-border;
   border-radius: $radius-card;
   transition: all var(--transition-base);
   cursor: pointer;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.65);
+    background: rgba(255, 255, 255, 0.7);
+    transform: translateY(-3px);
+    box-shadow: $shadow-sm;
 
-    transform: translateY(-6px);
-
-    .toastmaster-card__avatar {
-      transform: scale(1.08);
-
-      .avatar-image {
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
-      }
+    .toastmaster-card__avatar .avatar-image {
+      box-shadow: $shadow-md;
     }
   }
 }
 
 .toastmaster-card__avatar {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   transition: all var(--transition-base);
-  width: 260px;
-  height: 260px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
+
   @media (min-width: 720px) {
-    width: 400px;
-    height: 400px;
+    width: 180px;
+    height: 180px;
   }
 }
 

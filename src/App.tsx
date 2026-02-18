@@ -1,11 +1,13 @@
 import "./styles/app.scss";
-import { Hero } from "./components/Hero/Hero";
-import { WEDDING } from "./weddingConfig";
-import { Information } from "./components/Section/Info";
-import { ToastMasters } from "./components/Section/Toast";
-import { RSVP } from "./components/Section/RSVP";
-import { Welcome } from "./components/Section/Welcome";
-import { Footer } from "./components/Footer";
+import { WEDDING } from "./config";
+import {
+  Hero,
+  Welcome,
+  Information,
+  ToastMasters,
+  RSVP,
+  Footer,
+} from "./components";
 
 export default function App() {
   return (

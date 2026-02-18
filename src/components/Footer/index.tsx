@@ -1,4 +1,4 @@
-import { WEDDING } from "../../weddingConfig";
+import { WEDDING } from "../../config";
 import "./footer.scss";
 
 export function Footer() {

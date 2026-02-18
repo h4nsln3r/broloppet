@@ -37,40 +37,39 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    pointer-events: none;
-
+    pointer-events: none;   
+    height: 101%;
     background:
       radial-gradient(
         900px 420px at 50% 16%,
-        rgba(248, 240, 227, 0.08),
-        rgba(248, 240, 227, 0) 55%
+        rgba(250, 248, 245, 0.06),
+        transparent 55%
       ),
-      // huvudfade: nästan transparent i toppen -> tydligare mot botten
       linear-gradient(
-          to bottom,
-          rgba(248, 240, 227, 0.02) 0%,
-          rgba(248, 240, 227, 0.1) 28%,
-          rgba(248, 240, 227, 0.34) 55%,
-          rgba(248, 240, 227, 0.7) 82%,
-          rgba(248, 240, 227, 0.92) 100%
-        );
+        to bottom,
+        rgba(250, 248, 245, 0) 0%,
+        rgba(250, 248, 245, 0.08) 30%,
+        rgba(250, 248, 245, 0.4) 58%,
+        rgba(250, 248, 245, 0.78) 85%,
+        rgba(250, 248, 245, 0.95) 100%
+      );
   }
 
   &__header {
     position: relative;
     z-index: 1;
-    padding: 32px 24px;
+    padding: 40px 24px 32px;
 
     h1 {
       letter-spacing: 0.05em;
       font-family: $font-romantic;
       font-weight: 500;
-      font-size: clamp(10rem, 4vw, 2.3rem);
+      font-size: clamp(3.5rem, 6vw, 10rem);
       margin: 0 0 4px;
       color: rgb(129, 4, 4);
       text-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
       @media (max-width: 768px) {
-        font-size: clamp(6rem, 4vw, 5rem);
+        font-size: clamp(5rem, 4vw, 6rem);
       }
     }
   }
@@ -79,7 +78,10 @@
     margin: 0 0 4px;
     color: rgb(129, 4, 4);
     text-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
-    font-size: clamp(3.8rem, 4vw, 1.8rem);
+    font-size: clamp(2.2rem, 5vw, 4.5rem);
+    @media (max-width: 768px) {
+      font-size: clamp(1.8rem, 4vw, 3.8rem);
+    }
   }
 
   .lead {
@@ -90,46 +92,62 @@
     margin: 0;
     text-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
     color: rgb(129, 4, 4);
+
+    /* Desktop: en rad – dölj <br>, lägg mellanslag mellan delar */
+    .lead__br {
+      display: none;
+    }
+    .lead__line::after {
+      content: " ";
+    }
+
     @media (max-width: 768px) {
       font-size: 1.2rem;
+
+      /* Mobil: tre rader – Lördag / 29 augusti / 2026 */
+      .lead__br {
+        display: block;
+      }
+      .lead__line::after {
+        content: none;
+      }
     }
   }
 
   &__scroll-arrow {
     position: absolute;
-    bottom: 32px;
+    bottom: 28px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
 
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border: none;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     color: rgb(129, 4, 4);
-    transition: all 0.3s ease;
+    transition: all var(--transition-base);
     -webkit-tap-highlight-color: transparent;
     user-select: none;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
 
     svg {
-      animation: pulse-arrow 2s ease-in-out infinite;
+      animation: pulse-arrow 2.5s ease-in-out infinite;
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.25);
-      box-shadow:
-        0 0 20px rgba(129, 4, 4, 0.4),
-        0 0 40px rgba(129, 4, 4, 0.15);
-      transform: translateX(-50%) translateY(-4px);
+      background: rgba(255, 255, 255, 0.35);
+      transform: translateX(-50%) translateY(-2px);
+      box-shadow: $shadow-soft;
 
       svg {
-        animation: pulse-arrow 1s ease-in-out infinite;
-        filter: drop-shadow(0 0 8px rgba(129, 4, 4, 0.6));
+        animation: pulse-arrow 1.2s ease-in-out infinite;
       }
     }
   }
@@ -137,8 +155,8 @@
   &__letter {
     position: absolute;
     z-index: 2;
-    right: 16px;
-    bottom: 16px;
+    right: 20px;
+    bottom: 20px;
 
     display: inline-flex;
     align-items: center;
@@ -146,39 +164,39 @@
 
     svg {
       margin-top: 2px;
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       flex: 0 0 auto;
       color: rgb(129, 4, 4);
     }
 
-    padding: 10px 12px;
-    border-radius: 999px;
+    padding: 10px 16px;
+    border-radius: $radius-full;
 
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(6px);
-
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: $shadow-soft;
 
     color: rgb(129, 4, 4);
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
 
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     font-family: $font-heading;
-    font-size: 28px;
+    font-size: 0.85rem;
+    font-weight: 500;
     line-height: 1;
 
     &:hover {
       transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.35);
     }
 
     &--text {
-      font-size: 1.3rem;
-      font-weight: 500;
+      font-size: inherit;
     }
   }
 }

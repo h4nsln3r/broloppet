@@ -1,7 +1,7 @@
-// src/components/Section/Info/PlaceToggle.tsx
-import type { KeyboardEvent, ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from "react";
+import type { MapTarget } from "./types";
 
-export type MapTarget = 'default' | 'ceremony' | 'party';
+export type { MapTarget };
 
 interface PlaceToggleProps {
   target: MapTarget;

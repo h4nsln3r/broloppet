@@ -1,23 +1,23 @@
 @use "../../styles/variables" as *;
 
 .card {
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  padding: 20px 16px 24px;
-  box-shadow: $shadow-md;
-  backdrop-filter: blur(10px);
-  // border-radius: $radius-card;
+  background: $glass-bg;
+  border: 1px solid $glass-border;
+  padding: 24px 20px 28px;
+  border-radius: $radius-card;
+  box-shadow: $shadow-sm;
+  backdrop-filter: blur($glass-backdrop);
   transition: all var(--transition-base);
 
   @media (min-width: 720px) {
-    padding: 24px 20px 28px;
+    padding: 28px 24px 32px;
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.82);
-    border-color: rgba(255, 255, 255, 0.45);
-    box-shadow: $shadow-lg;
-    transform: translateY(-4px);
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
   }
 
   p,

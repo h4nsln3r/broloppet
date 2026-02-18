@@ -1,12 +1,14 @@
+@use "../../styles/variables" as *;
+
 .countdown {
   display: flex;
   justify-content: center;
   gap: 2rem;
-  padding: 1rem 1rem;
+  padding: 1.25rem 1rem 1.5rem;
 
   @media (max-width: 768px) {
-    gap: 1rem;
-    padding: 1.5rem 0.5rem;
+    gap: 1.25rem;
+    padding: 1rem 0.5rem;
   }
 }
 
@@ -14,24 +16,26 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .countdown__number {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #c4a69d;
-  font-family: 'Georgia', serif;
+  font-size: 2.25rem;
+  font-weight: 500;
+  color: var(--accent);
+  font-family: $font-heading;
   line-height: 1;
+  letter-spacing: 0.02em;
 
   @media (max-width: 768px) {
-    font-size: 1.75rem;
+    font-size: 1.65rem;
   }
 }
 
 .countdown__label {
-  font-size: 0.875rem;
-  color: #888;
+  font-size: 0.75rem;
+  color: var(--muted);
   text-transform: lowercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
+  font-family: $font-body;
 }

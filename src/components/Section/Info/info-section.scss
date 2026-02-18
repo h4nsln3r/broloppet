@@ -79,15 +79,15 @@
       width: 100%;
       max-width: 640px;
       height: auto;
-      margin: 0px 0 10px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      // border-radius: $radius-card;
-      box-shadow: $shadow-sm;
+      margin: 0 0 12px;
+      border: 1px solid $glass-border;
+      border-radius: $radius-md;
+      box-shadow: $shadow-xs;
       transition: all var(--transition-base);
 
       &:hover {
-        box-shadow: $shadow-md;
-        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: $shadow-sm;
+        border-color: rgba(255, 255, 255, 0.5);
       }
     }
   }
@@ -138,7 +138,7 @@
     gap: 12px;
 
     @media (min-width: 720px) {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: start;
     }
 
@@ -155,8 +155,165 @@
   }
 }
 
+/* Klädkod + Barn på samma rad, Present på nedre raden i full bredd – samma look som transport */
+.card--dress-barn-present {
+  .info-grid--dress-barn-present {
+    @media (min-width: 720px) {
+      gap: 16px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+  }
+
+  .info-item {
+    @media (min-width: 720px) {
+      padding: 22px 24px 26px;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      min-width: 0;
+
+      p {
+        line-height: 1.6;
+        font-size: 0.95rem;
+      }
+    }
+  }
+
+  .info-item--full-width {
+    @media (min-width: 720px) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .info-item__title-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+  }
+
+  .info-item__icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    color: var(--accent);
+    opacity: 0.9;
+  }
+}
+
+/* Hotell-kortet – samma look som transport och klädkod/barn/present */
+.card--hotell {
+  .card--hotell__intro {
+    margin: 0 0 8px;
+  }
+
+  .card--hotell__address {
+    margin: 0 0 24px;
+    font-size: 0.95rem;
+  }
+
+  .info-grid--hotell {
+    @media (min-width: 720px) {
+      gap: 16px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .info-grid--hotell .info-item {
+    @media (min-width: 720px) {
+      padding: 22px 24px 26px;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      min-width: 0;
+
+      p {
+        line-height: 1.6;
+        font-size: 0.95rem;
+      }
+    }
+  }
+
+  .info-grid--hotell .info-item__title-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+  }
+
+  .info-grid--hotell .info-item__icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    color: var(--accent);
+    opacity: 0.9;
+  }
+}
+
+/* Transportkortet "Hur tar man sig dit?" – Bil/Taxi sträcker sig över hela kortet på desktop */
 .transport-card {
   margin-bottom: 18px;
+
+  @media (min-width: 720px) {
+    overflow: hidden;
+  }
+
+  .transport-card__destination {
+    margin: 0 0 4px;
+  }
+
+  .transport-card__address {
+    margin: 0 0 24px;
+    font-size: 0.95rem;
+  }
+}
+
+.transport-grid {
+  @media (min-width: 720px) {
+    margin-left: -24px;
+    margin-right: -24px;
+    width: calc(100% + 48px);
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+  }
+}
+
+.transport-item {
+  @media (min-width: 720px) {
+    padding: 22px 24px 26px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    min-width: 0;
+
+    p {
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    &:first-child {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .transport-item__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+  }
+
+  .transport-item__icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    color: var(--accent);
+    opacity: 0.9;
+  }
 }
 
 .place-text {
@@ -183,30 +340,43 @@
   }
 }
 
+.place-buttons-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 0;
+}
+
 .place-button {
   display: inline-block;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   padding: 6px;
-  border-radius: $radius-md;
+  border-radius: $radius-sm;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-family: $font-body;
   color: var(--text);
-  transition: all var(--transition-fast);
+  transition: all var(--transition-base);
   backdrop-filter: blur(6px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: $shadow-sm;
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   }
 
   &.active {
-    background: rgba(255, 255, 255, 0.6);
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: $shadow-md;
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(255, 255, 255, 0.6);
     font-weight: 600;
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.07),
+      0 0 0 1px rgba(255, 255, 255, 0.5),
+      0 0 16px 2px rgba(255, 255, 255, 0.2);
   }
 }
 
@@ -251,14 +421,12 @@
 .church-main.active {
   position: relative;
   z-index: 3;
-  transform: translateY(-8px) scale(1.02);
-  /* stronger layered shadow + subtle warm glow */
+  transform: translateY(-4px) scale(1.01);
   box-shadow:
-    0 26px 60px rgba(0, 0, 0, 0.6),
-    0 8px 20px rgba(0, 0, 0, 0.45) !important;
-  border: 2px solid rgba(255, 255, 255, 0.85) !important;
-  transition:
-    transform 360ms cubic-bezier(0.22, 0.9, 0.32, 1),
-    box-shadow 360ms cubic-bezier(0.22, 0.9, 0.32, 1),
-    filter 360ms cubic-bezier(0.22, 0.9, 0.32, 1);
+    0 12px 28px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 0 24px 4px rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  transition: transform var(--transition-base), box-shadow var(--transition-base),
+    border-color var(--transition-base);
 }

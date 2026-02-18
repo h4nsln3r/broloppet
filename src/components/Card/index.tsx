@@ -1,5 +1,12 @@
-import './card.scss';
+import "./card.scss";
 
-export function Card({ children }: { children: React.ReactNode }) {
-  return <div className="card">{children}</div>;
+type CardProps = {
+  children: React.ReactNode;
+  className?: string;
+};
+
+export function Card({ children, className }: CardProps) {
+  return (
+    <div className={className ? `card ${className}` : "card"}>{children}</div>
+  );
 }

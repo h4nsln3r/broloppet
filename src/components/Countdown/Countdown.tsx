@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import './countdown.scss';
+import { useEffect, useState } from "react";
+import { WEDDING } from "../../config";
+import "./countdown.scss";
 
 interface TimeLeft {
   days: number;
@@ -18,8 +19,7 @@ export function Countdown() {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      // August 29, 2026 at 14:00
-      const targetDate = new Date(2026, 7, 29, 14, 0, 0).getTime();
+      const targetDate = new Date(WEDDING.ceremonyDateISO).getTime();
       const now = new Date().getTime();
       const difference = targetDate - now;
 

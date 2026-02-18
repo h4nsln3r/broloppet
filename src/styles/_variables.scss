@@ -1,42 +1,45 @@
-// Shared SASS variables
-// Färger hämtade från inbjudan
-$bg-color: #f8f0e3;
-$accent: #b8ab9b;
-$text-color: #2f2620;
-$muted-color: rgba(47, 38, 32, 0.65);
+// Shared SASS variables – clean, premium wedding palette
+$bg-color: #faf8f5;
+$bg-warm: #f6f2ec;
+$accent: #9a8f82;
+$accent-strong: #7a6f64;
+$text-color: #2c2520;
+$muted-color: rgba(44, 37, 32, 0.6);
+$hero-accent: #6b5344; // warm burgundy-brown, elegant
+$hero-accent-soft: rgba(107, 83, 68, 0.92);
 
-// Radius-system
-$radius-sm: 8px;
-$radius-md: 12px;
-$radius-card: 20px;
-$radius-xl: 24px;
+// Radius-system – hårda kanter på kort/bilder; pill (999px) för knappar
+$radius-sm: 0;
+$radius-md: 0;
+$radius-card: 0;
+$radius-xl: 0;
 $radius-full: 999px;
 
-// Shadow-system (Apple-inspired)
-$shadow-xs: 0 2px 8px rgba(0, 0, 0, 0.06);
-$shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
-$shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.08);
-$shadow-md: 0 12px 32px rgba(0, 0, 0, 0.1);
-$shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.12);
-$shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.08);
+// Shadow-system – subtle, premium
+$shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.04);
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+$shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 8px 24px rgba(0, 0, 0, 0.07);
+$shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.08);
+$shadow-glass: 0 4px 20px rgba(0, 0, 0, 0.05);
 
-// Glassmorphism-values
-$glass-bg: rgba(255, 255, 255, 0.8);
-$glass-backdrop: 10px;
-$glass-border: rgba(255, 255, 255, 0.3);
+// Glassmorphism
+$glass-bg: rgba(255, 255, 255, 0.88);
+$glass-backdrop: 12px;
+$glass-border: rgba(255, 255, 255, 0.4);
 
 // Transitions
-$transition-fast: 0.15s ease-out;
-$transition-base: 0.25s ease-out;
+$transition-fast: 0.18s ease-out;
+$transition-base: 0.28s ease-out;
 $transition-slow: 0.4s ease-out;
 
 // Font Stack
-$font-heading: "Playfair Display", "Times New Roman", serif;
+$font-heading: "Cormorant Garamond", "Playfair Display", serif;
 $font-romantic: "Parisienne", cursive;
 $font-body:
+  "DM Sans",
   system-ui,
   -apple-system,
-  BlinkMacSystemFont,
   "Segoe UI",
   sans-serif;
 

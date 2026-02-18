@@ -1,6 +1,7 @@
-// src/components/Section/Toast/index.tsx
-import { WEDDING } from "../../../weddingConfig";
+import { IoMicOutline, IoPeopleOutline, IoCalendarOutline } from "react-icons/io5";
+import { WEDDING } from "../../../config";
 import { Card } from "../../Card";
+import { SectionTitle } from "../SectionTitle";
 import JGImage from "../../../assets/toast/JG.jpg";
 import TebbeImage from "../../../assets/toast/tebbe.jpg";
 
@@ -14,19 +15,26 @@ const toastmasterImages: Record<string, string> = {
 export function ToastMasters() {
   return (
     <section className="section section--toastmasters">
-      <h2>Tal & underhållning</h2>
-      <Card>
-        <p>
-          Vi är otroligt glada att ha{" "}
-          <strong>{WEDDING.toastmasters[0].name}</strong> och{" "}
-          <strong>{WEDDING.toastmasters[1].name}</strong> som toastmasters.
-          <br />
-          <br />
-          De hjälper oss att hålla ihop hela dagen och kvällen – från tal och
-          spex till allt som händer däremellan. Tveka inte att prata med dem om
-          ni behöver hjälp eller har frågor.
-        </p>
+      <SectionTitle>Tal & underhållning</SectionTitle>
+      <Card className="card--toast">
+        <div className="toast-intro">
+          <IoMicOutline className="toast-intro__icon" aria-hidden />
+          <p>
+            Vi är otroligt glada att ha{" "}
+            <strong>{WEDDING.toastmasters[0].name}</strong> och{" "}
+            <strong>{WEDDING.toastmasters[1].name}</strong> som toastmasters.
+            <br />
+            <br />
+            De hjälper oss att hålla ihop hela dagen och kvällen – från tal och
+            spex till allt som händer däremellan. Tveka inte att prata med dem
+            om ni behöver hjälp eller har frågor.
+          </p>
+        </div>
 
+        <h4 className="toast-contact__heading">
+          <IoPeopleOutline className="toast-contact__icon" aria-hidden />
+          Våra toastmasters
+        </h4>
         <div className="toastmaster-contact">
           {WEDDING.toastmasters.map((tm, idx) => (
             <div
@@ -86,16 +94,18 @@ export function ToastMasters() {
           ))}
         </div>
 
-        <div className="info-grid" style={{ marginTop: "24px" }}>
-          <div className="info-item">
-            <p className="muted">
-              {WEDDING.toastInfo.note}
-              <br />
-              <br />
-              Sista dag för att anmäla tal eller underhållning:{" "}
-              <strong>{WEDDING.toastInfo.deadline}</strong>
-            </p>
-          </div>
+        <div className="toast-deadline">
+          <h4 className="toast-deadline__title">
+            <IoCalendarOutline className="toast-deadline__icon" aria-hidden />
+            Anmälan
+          </h4>
+          <p className="toast-deadline__note muted">
+            {WEDDING.toastInfo.note}
+          </p>
+          <p className="toast-deadline__date">
+            Sista dag för att anmäla tal eller underhållning:{" "}
+            <strong>{WEDDING.toastInfo.deadline}</strong>
+          </p>
         </div>
       </Card>
     </section>
