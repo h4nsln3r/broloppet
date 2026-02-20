@@ -282,7 +282,7 @@ export function Information() {
               Swish kan skickas till vår toastmadame{" "}
               <span className="present-contact">
                 <span className="present-contact__name">
-                  Jennifer (Jenny) Griffin Lindahl
+                  Jennifer Griffin Lindahl
                 </span>
                 <a href="tel:0736226758" className="present-contact__tel">
                   073 622 67 58
