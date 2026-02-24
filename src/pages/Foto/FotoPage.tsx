@@ -1,15 +1,32 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { supabase, WEDDING_PHOTOS_BUCKET } from "../../lib/supabase";
 import "./FotoPage.scss";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
+type ViewMode = "upload" | "gallery" | "slideshow";
+
+const SLIDESHOW_INTERVAL_MS = 5000;
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 export function FotoPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [images, setImages] = useState<{ name: string; url: string }[]>([]);
-  const [mode, setMode] = useState<"upload" | "gallery">("upload");
+  const [mode, setMode] = useState<ViewMode>("upload");
+  const [slideshowIndex, setSlideshowIndex] = useState(0);
+  const [randomOrder, setRandomOrder] = useState(false);
+  const orderIndicesRef = useRef<number[]>([]);
+  const slideshowTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchImages = useCallback(async () => {
     const client = supabase;
@@ -36,6 +53,68 @@ export function FotoPage() {
   useEffect(() => {
     fetchImages();
   }, [fetchImages]);
+
+  const startSlideshow = useCallback(() => {
+    setMode("slideshow");
+    setSlideshowIndex(0);
+    setRandomOrder(false);
+    orderIndicesRef.current = images.map((_, i) => i);
+    document.documentElement.requestFullscreen?.().catch(() => {});
+  }, [images]);
+
+  useEffect(() => {
+    if (mode === "slideshow" && images.length > 0 && orderIndicesRef.current.length !== images.length) {
+      orderIndicesRef.current = images.map((_, i) => i);
+    }
+  }, [mode, images]);
+
+  useEffect(() => {
+    if (mode !== "slideshow" || images.length === 0) return;
+    const n = images.length;
+    slideshowTimerRef.current = setInterval(() => {
+      setSlideshowIndex((i) => (i + 1) % n);
+    }, SLIDESHOW_INTERVAL_MS);
+    return () => {
+      if (slideshowTimerRef.current) {
+        clearInterval(slideshowTimerRef.current);
+        slideshowTimerRef.current = null;
+      }
+    };
+  }, [mode, images.length, randomOrder]);
+
+  const orderIndices = orderIndicesRef.current;
+  const currentImage =
+    orderIndices.length > 0 && orderIndices[slideshowIndex] !== undefined
+      ? images[orderIndices[slideshowIndex]]
+      : images[slideshowIndex];
+
+  const goPrev = useCallback(() => {
+    const n = images.length;
+    setSlideshowIndex((i) => (i - 1 + n) % n);
+  }, [images.length]);
+
+  const goNext = useCallback(() => {
+    const n = images.length;
+    setSlideshowIndex((i) => (i + 1) % n);
+  }, [images.length]);
+
+  const toggleRandom = useCallback(() => {
+    setRandomOrder((prev) => {
+      setSlideshowIndex(0);
+      if (prev) {
+        orderIndicesRef.current = images.map((_, i) => i);
+        return false;
+      } else {
+        orderIndicesRef.current = shuffle(images.map((_, i) => i));
+        return true;
+      }
+    });
+  }, [images]);
+
+  const exitSlideshow = useCallback(() => {
+    setMode("gallery");
+    document.exitFullscreen?.();
+  }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -98,9 +177,26 @@ export function FotoPage() {
     );
   }
 
+  useEffect(() => {
+    if (mode !== "slideshow") return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") exitSlideshow();
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "ArrowRight") goNext();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mode, exitSlideshow, goPrev, goNext]);
+
   return (
-    <div className="foto-page">
+    <div className={`foto-page ${mode === "gallery" ? "foto-page--gallery" : ""}`}>
       <div className="foto-page__card">
+        <Link to="/" className="foto-page__back-corner">
+          ← Tillbaka till bröllopssidan
+        </Link>
+        <Link to="/qrcode" className="foto-page__qr-corner" title="QR-kod">
+          QR
+        </Link>
         <h1>Foto – Hannes & Julia</h1>
         <p className="foto-page__intro muted">
           Ladda upp bilder från bröllopsdagen. De visas i galleriet på skärmen.
@@ -120,6 +216,14 @@ export function FotoPage() {
             onClick={() => setMode("gallery")}
           >
             Visa galleri ({images.length})
+          </button>
+          <button
+            type="button"
+            className={mode === "slideshow" ? "active" : ""}
+            onClick={startSlideshow}
+            disabled={images.length === 0}
+          >
+            Visa bildspel
           </button>
         </div>
 
@@ -200,9 +304,83 @@ export function FotoPage() {
           </div>
         )}
 
-        <a href="/" className="foto-page__back">
-          ← Tillbaka till bröllopssidan
-        </a>
+        {mode === "slideshow" && images.length > 0 && (
+          <div
+            className="foto-slideshow"
+            role="region"
+            aria-label="Bildspel"
+          >
+            <button
+              type="button"
+              role="switch"
+              aria-checked={randomOrder}
+              className="foto-slideshow__toggle"
+              onClick={toggleRandom}
+              aria-label={randomOrder ? "Slumpad ordning – klicka för att stänga av" : "Slumpad ordning – klicka för att slå på"}
+              title={randomOrder ? "Slumpad ordning på" : "Slumpad ordning av"}
+            >
+              <span
+                className="foto-slideshow__toggle-track"
+                style={{
+                  background: randomOrder
+                    ? "rgba(107, 83, 68, 0.5)"
+                    : "rgba(154, 143, 130, 0.3)",
+                }}
+              >
+                <span
+                  className="foto-slideshow__toggle-thumb"
+                  style={{
+                    transform: randomOrder ? "translateX(16px)" : "translateX(0)",
+                    background: randomOrder ? "#6b5344" : "#fff",
+                  }}
+                />
+              </span>
+              <span
+                className="foto-slideshow__toggle-label"
+                style={{
+                  color: randomOrder ? "#6b5344" : undefined,
+                  fontWeight: randomOrder ? 600 : 500,
+                }}
+              >
+                Rand
+              </span>
+            </button>
+            <button
+              type="button"
+              className="foto-slideshow__close"
+              onClick={exitSlideshow}
+              aria-label="Avsluta bildspel"
+            >
+              ✕
+            </button>
+            <button
+              type="button"
+              className="foto-slideshow__nav foto-slideshow__nav--prev"
+              onClick={goPrev}
+              aria-label="Föregående bild"
+            >
+              ←
+            </button>
+            <div className="foto-slideshow__image-wrap">
+              <img
+                src={currentImage?.url}
+                alt=""
+                className="foto-slideshow__image"
+              />
+            </div>
+            <button
+              type="button"
+              className="foto-slideshow__nav foto-slideshow__nav--next"
+              onClick={goNext}
+              aria-label="Nästa bild"
+            >
+              →
+            </button>
+            <div className="foto-slideshow__counter">
+              {slideshowIndex + 1} / {images.length}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
