@@ -1,25 +1,19 @@
+import { Routes, Route } from "react-router-dom";
+import { ParallaxProvider } from "react-scroll-parallax";
+
 import "./styles/app.scss";
-import { WEDDING } from "./config";
-import {
-  Hero,
-  Welcome,
-  Information,
-  ToastMasters,
-  RSVP,
-  Footer,
-} from "./components";
+import { WeddingPage } from "./pages/WeddingPage";
+import { FotoPage } from "./pages/FotoPage";
+import { QRCodePage } from "./pages/QRCodePage";
 
 export default function App() {
   return (
-    <div className="page">
-      <Hero wedding={WEDDING} />
-      <main className="content">
-        <Welcome />
-        <Information />
-        <ToastMasters />
-        <RSVP />
-      </main>
-      <Footer />
-    </div>
+    <ParallaxProvider>
+      <Routes>
+        <Route path="/" element={<WeddingPage />} />
+        <Route path="/foto" element={<FotoPage />} />
+        <Route path="/qrcode" element={<QRCodePage />} />
+      </Routes>
+    </ParallaxProvider>
   );
 }

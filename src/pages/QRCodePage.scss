@@ -1,0 +1,65 @@
+@use "../styles/variables" as *;
+
+.qrcode-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+}
+
+.qrcode-page__card {
+  background: $glass-bg;
+  backdrop-filter: blur($glass-backdrop);
+  border: 1px solid $glass-border;
+  padding: 40px 32px;
+  text-align: center;
+  box-shadow: $shadow-lg;
+  max-width: 420px;
+  width: 100%;
+}
+
+.qrcode-page__title {
+  margin: 0 0 8px;
+  font-family: $font-heading;
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.qrcode-page__subtitle {
+  margin: 0 0 32px;
+  font-size: $fs-sm;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.qrcode-page__qr {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+  background: white;
+  margin-bottom: 28px;
+  box-shadow: $shadow-sm;
+}
+
+.qrcode-page__btn {
+  display: inline-block;
+  padding: 12px 24px;
+  font-family: $font-body;
+  font-size: $fs-base;
+  font-weight: 500;
+  color: white;
+  background: $hero-accent;
+  border-radius: $radius-full;
+  text-decoration: none;
+  transition: opacity $transition-fast;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
