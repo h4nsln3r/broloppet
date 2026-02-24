@@ -1,5 +1,5 @@
-import { Countdown } from "./../../Countdown/Countdown";
-import heartMark from "./../../../assets/icons/heart-mark.svg";
+import { Countdown } from "../../../../components/Countdown/Countdown";
+import heartMark from "../../../../assets/icons/heart-mark.svg";
 
 export function Welcome() {
   return (

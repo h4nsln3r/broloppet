@@ -10,14 +10,14 @@ import {
   IoDocumentTextOutline,
   IoOpenOutline,
 } from "react-icons/io5";
-import { WEDDING } from "../../../config";
-import hossmoKA from "../../../assets/hossmoka.jpg";
-import { addQueryParam } from "../../Map/utils";
-import { useScrollToMap } from "../../../hooks/useScrollToMap";
+import { WEDDING } from "../../../../config";
+import hossmoKA from "../../../../assets/hossmoka.jpg";
+import { addQueryParam } from "../../../../components/Map/utils";
+import { useScrollToMap } from "../../../../hooks/useScrollToMap";
 import type { MapTarget } from "./types";
 
-import { SectionTitle } from "../SectionTitle";
-import "../section.scss";
+import { SectionTitle } from "../../../../components/Section/SectionTitle";
+import "../../../../components/Section/section.scss";
 import "./info-section.scss";
 
 export function Information() {
