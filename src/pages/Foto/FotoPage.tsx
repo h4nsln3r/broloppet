@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { supabase, WEDDING_PHOTOS_BUCKET } from "../lib/supabase";
+import { supabase, WEDDING_PHOTOS_BUCKET } from "../../lib/supabase";
 import "./FotoPage.scss";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";

@@ -1,4 +1,4 @@
-import { WEDDING } from "../config";
+import { WEDDING } from "../../config";
 import {
   Hero,
   Welcome,
@@ -6,7 +6,7 @@ import {
   ToastMasters,
   RSVP,
   Footer,
-} from "../components";
+} from "../../components";
 
 export function WeddingPage() {
   return (

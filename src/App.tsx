@@ -2,9 +2,9 @@ import { Routes, Route } from "react-router-dom";
 import { ParallaxProvider } from "react-scroll-parallax";
 
 import "./styles/app.scss";
-import { WeddingPage } from "./pages/WeddingPage";
-import { FotoPage } from "./pages/FotoPage";
-import { QRCodePage } from "./pages/QRCodePage";
+import { WeddingPage } from "./pages/Wedding/WeddingPage";
+import { FotoPage } from "./pages/Foto/FotoPage";
+import { QRCodePage } from "./pages/QrCode/QRCodePage";
 
 export default function App() {
   return (
