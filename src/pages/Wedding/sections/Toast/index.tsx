@@ -1,9 +1,9 @@
 import { IoMicOutline, IoPeopleOutline, IoCalendarOutline } from "react-icons/io5";
-import { WEDDING } from "../../../config";
-import { Card } from "../../Card";
-import { SectionTitle } from "../SectionTitle";
-import JGImage from "../../../assets/toast/JG.jpg";
-import TebbeImage from "../../../assets/toast/tebbe.jpg";
+import { WEDDING } from "../../../../config";
+import { Card } from "../../../../components/Card";
+import { SectionTitle } from "../../../../components/Section/SectionTitle";
+import JGImage from "../../../../assets/toast/JG.jpg";
+import TebbeImage from "../../../../assets/toast/tebbe.jpg";
 
 import "./toast-section.scss";
 

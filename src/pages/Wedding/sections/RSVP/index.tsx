@@ -1,11 +1,11 @@
 import { IoMailOpenOutline } from "react-icons/io5";
-import { WEDDING } from "../../../config";
-import { RsvpForm } from "../../Form/RsvpForm";
+import { WEDDING } from "../../../../config";
+import { RsvpForm } from "../../../../components/Form/RsvpForm";
 import { ParallaxBanner } from "react-scroll-parallax";
-import rsvpBg from "../../../assets/background-images/puss.jpg";
-import { SectionTitle } from "../SectionTitle";
+import rsvpBg from "../../../../assets/background-images/puss.jpg";
+import { SectionTitle } from "../../../../components/Section/SectionTitle";
 
-import "../section.scss";
+import "../../../../components/Section/section.scss";
 import "./rsvp-section.scss";
 
 export function RSVP() {
