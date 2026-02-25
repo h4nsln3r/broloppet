@@ -265,6 +265,7 @@
     justify-content: center;
     padding: 60px 80px;
     box-sizing: border-box;
+    perspective: 1200px;
   }
 
   .foto-slideshow__image {
@@ -274,6 +275,7 @@
     height: auto;
     object-fit: contain;
     object-position: center;
+    animation: foto-slideshow-flip 5s ease-out forwards;
   }
 
   .foto-slideshow__toggle {
@@ -380,6 +382,23 @@
     transform: translateX(-50%);
     color: $muted-color;
     font-size: $fs-sm;
+  }
+}
+
+@keyframes foto-slideshow-flip {
+  0% {
+    transform: perspective(1200px) rotateY(-85deg) scale(0.92);
+    opacity: 0.6;
+  }
+  16% {
+    transform: perspective(1200px) rotateY(0deg) scale(1);
+    opacity: 1;
+  }
+  16% {
+    transform: perspective(1200px) rotateY(0deg) scale(1);
+  }
+  100% {
+    transform: perspective(1200px) rotateY(0deg) scale(1.08);
   }
 }
 

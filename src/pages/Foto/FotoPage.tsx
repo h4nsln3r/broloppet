@@ -363,6 +363,7 @@ export function FotoPage() {
             </button>
             <div className="foto-slideshow__image-wrap">
               <img
+                key={currentImage?.name ?? slideshowIndex}
                 src={currentImage?.url}
                 alt=""
                 className="foto-slideshow__image"
