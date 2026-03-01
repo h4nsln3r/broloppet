@@ -28,7 +28,7 @@ export const WEDDING = {
     },
     {
       name: "Erik Tebrell",
-      email: "erik.tebrell@gmail.com",
+      email: "eriktebrell@gmail.com",
       image: "tebbe.jpg",
     },
   ],
