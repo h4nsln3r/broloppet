@@ -257,7 +257,7 @@ export function Information() {
               <IoShirtOutline className="info-item__icon" aria-hidden />
               Klädkod
             </h4>
-            <h4 className="muted">Kavaj</h4>
+            <h4 className="muted">Kavaj / Sommarfin</h4>
           </div>
 
           <div className="info-item">
