@@ -5,6 +5,7 @@ import type { WeddingConfig } from "../../config";
 import { DESKTOP_HERO_IMAGES, MOBILE_HERO_IMAGES, ALL_HERO_IMAGES } from "./heroImages";
 import "./hero.scss";
 import { BouncyHeart } from "../Animation/BouncyHeart";
+import { useDualBouncyPhysics } from "../Animation/BouncyHeart/useDualBouncyPhysics";
 import { ScrollToRsvpLetter } from "../Animation/ScrollToRsvpLetter";
 
 type HeroProps = {
@@ -36,6 +37,20 @@ export function Hero({ wedding }: HeroProps) {
   );
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
+  const [secondHeartSpawn, setSecondHeartSpawn] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [heart1Paused, setHeart1Paused] = useState(false);
+
+  const { body1, body2 } = useDualBouncyPhysics({
+    containerRef,
+    paused1: heart1Paused,
+    paused2: false,
+    onBounce1: () => setImageIndex((i) => i + 1),
+    onBounce2: () => setImageIndex((i) => i + 1),
+    initial2: secondHeartSpawn ?? undefined,
+  });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -93,8 +108,18 @@ export function Hero({ wedding }: HeroProps) {
 
       <BouncyHeart
         containerRef={containerRef}
+        physics={body1}
+        onPausedChange={setHeart1Paused}
         onBounce={() => setImageIndex((i) => i + 1)}
+        onLongPressComplete={(pos) => setSecondHeartSpawn(pos)}
       />
+      {secondHeartSpawn && (
+        <BouncyHeart
+          containerRef={containerRef}
+          physics={body2}
+          onBounce={() => setImageIndex((i) => i + 1)}
+        />
+      )}
 
       <ScrollToRsvpLetter targetId="rsvp" label="OSA" />
 

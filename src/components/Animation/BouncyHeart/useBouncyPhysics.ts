@@ -1,23 +1,37 @@
 // src/components/Animation/BouncyHeart/useBouncyPhysics.ts
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useAnimationFrame, useMotionValue, MotionValue } from "framer-motion";
 
 type UseBouncyPhysicsOptions = {
   containerRef: React.RefObject<HTMLElement | null>;
   paused?: boolean;
   onBounce?: () => void;
+  /** Optionell startposition (t.ex. för andra hjärtat) */
+  initialX?: number;
+  initialY?: number;
+  /** När true körs inte fysiken (används när extern fysik används) */
+  skipPhysics?: boolean;
 };
 
 type UseBouncyPhysicsResult = {
   x: MotionValue<number>;
   y: MotionValue<number>;
   boost: () => void;
+  /** Lägg till hastighet (t.ex. från drag/släpp) – ökar farten */
+  applyVelocity: (vx: number, vy: number) => void;
+  /** Sätt position (t.ex. efter drag) */
+  setPosition: (px: number, py: number) => void;
 };
+
+const VELOCITY_MAX = 520;
 
 export function useBouncyPhysics({
   containerRef,
   paused = false,
   onBounce,
+  initialX,
+  initialY,
+  skipPhysics = false,
 }: UseBouncyPhysicsOptions): UseBouncyPhysicsResult {
   const x = useMotionValue(40);
   const y = useMotionValue(40);
@@ -31,21 +45,48 @@ export function useBouncyPhysics({
     if (!el) return;
 
     const r = el.getBoundingClientRect();
-    x.set(Math.max(16, Math.min(120, r.width - 60)));
-    y.set(Math.max(16, Math.min(120, r.height - 60)));
+    const maxX = Math.max(10, r.width - 54);
+    const maxY = Math.max(10, r.height - 54);
+    if (initialX != null && initialY != null) {
+      x.set(Math.max(10, Math.min(initialX, maxX)));
+      y.set(Math.max(10, Math.min(initialY, maxY)));
+    } else {
+      x.set(Math.max(16, Math.min(120, maxX)));
+      y.set(Math.max(16, Math.min(120, maxY)));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const clamp = (v: number) => Math.max(-420, Math.min(420, v));
+  const clamp = (v: number) => Math.max(-VELOCITY_MAX, Math.min(VELOCITY_MAX, v));
 
-  function boost() {
+  const boost = useCallback(() => {
     const boost = 180;
     vxRef.current = clamp(vxRef.current + (Math.random() * 2 - 1) * boost);
     vyRef.current = clamp(vyRef.current + (Math.random() * 2 - 1) * boost);
-  }
+  }, []);
+
+  const applyVelocity = useCallback((vx: number, vy: number) => {
+    vxRef.current = clamp(vxRef.current + vx);
+    vyRef.current = clamp(vyRef.current + vy);
+  }, []);
+
+  const setPosition = useCallback(
+    (px: number, py: number) => {
+      const el = containerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const size = 44;
+      const padding = 10;
+      const maxX = Math.max(padding, rect.width - size - padding);
+      const maxY = Math.max(padding, rect.height - size - padding);
+      x.set(Math.max(padding, Math.min(px, maxX)));
+      y.set(Math.max(padding, Math.min(py, maxY)));
+    },
+    [x, y, containerRef]
+  );
 
   useAnimationFrame((_t, delta) => {
-    if (paused) return;
+    if (skipPhysics || paused) return;
 
     const el = containerRef.current;
     if (!el) return;
@@ -94,5 +135,5 @@ export function useBouncyPhysics({
     }
   });
 
-  return { x, y, boost };
+  return { x, y, boost, applyVelocity, setPosition };
 }
