@@ -212,6 +212,33 @@
   margin: 16px 0 0;
   color: #b33b3b;
   font-size: 0.95rem;
+  padding: 12px 14px;
+  border: 1px solid rgba(179, 59, 59, 0.3);
+  border-radius: $radius-sm;
+  background: rgba(179, 59, 59, 0.06);
+}
+
+.foto-upload__error-msg {
+  margin: 0 0 8px;
+  font-weight: 500;
+}
+
+.foto-upload__error-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.foto-upload__error-file {
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.foto-upload__error-hint {
+  margin: 10px 0 0;
+  color: var(--muted);
 }
 
 /* Gallery */

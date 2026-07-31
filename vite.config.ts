@@ -5,4 +5,15 @@ export default defineConfig({
   plugins: [react()],
 
   base: "/",
+
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          motion: ["framer-motion", "react-scroll-parallax"],
+        },
+      },
+    },
+  },
 });

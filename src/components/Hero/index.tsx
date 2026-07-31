@@ -1,8 +1,9 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { Parallax } from "react-scroll-parallax";
+import { useReducedMotion } from "framer-motion";
 
 import type { WeddingConfig } from "../../config";
-import { DESKTOP_HERO_IMAGES, MOBILE_HERO_IMAGES, ALL_HERO_IMAGES } from "./heroImages";
+import { DESKTOP_HERO_IMAGES, MOBILE_HERO_IMAGES } from "./heroImages";
 import "./hero.scss";
 import { BouncyHeart } from "../Animation/BouncyHeart";
 import { useDualBouncyPhysics } from "../Animation/BouncyHeart/useDualBouncyPhysics";
@@ -32,6 +33,7 @@ function splitDateLong(dateLong: string): [string, string, string] {
 
 export function Hero({ wedding }: HeroProps) {
   const containerRef = useRef<HTMLElement | null>(null);
+  const prefersReducedMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.innerWidth < 768
   );
@@ -45,8 +47,8 @@ export function Hero({ wedding }: HeroProps) {
 
   const { body1, body2 } = useDualBouncyPhysics({
     containerRef,
-    paused1: heart1Paused,
-    paused2: false,
+    paused1: heart1Paused || !!prefersReducedMotion,
+    paused2: !!prefersReducedMotion,
     onBounce1: () => setImageIndex((i) => i + 1),
     onBounce2: () => setImageIndex((i) => i + 1),
     initial2: secondHeartSpawn ?? undefined,
@@ -58,22 +60,28 @@ export function Hero({ wedding }: HeroProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const activeList = isMobile ? MOBILE_HERO_IMAGES : DESKTOP_HERO_IMAGES;
+
+  // Förladda bara bilderna för aktuell enhet (mobil/desktop) – inte båda.
   useEffect(() => {
+    let cancelled = false;
     let loadedCount = 0;
-    const total = ALL_HERO_IMAGES.length;
+    const total = activeList.length;
+    setImagesLoaded(false);
     const onLoad = () => {
       loadedCount++;
-      if (loadedCount === total) setImagesLoaded(true);
+      if (!cancelled && loadedCount === total) setImagesLoaded(true);
     };
-    ALL_HERO_IMAGES.forEach((src) => {
+    activeList.forEach((src) => {
       const img = new Image();
       img.onload = onLoad;
       img.onerror = onLoad;
       img.src = src;
     });
-  }, []);
-
-  const activeList = isMobile ? MOBILE_HERO_IMAGES : DESKTOP_HERO_IMAGES;
+    return () => {
+      cancelled = true;
+    };
+  }, [activeList]);
   const currentImage =
     activeList[imageIndex % activeList.length] ?? DESKTOP_HERO_IMAGES[0];
 
@@ -88,12 +96,18 @@ export function Hero({ wedding }: HeroProps) {
   );
 
   const handleScrollDown = () => {
-    document.querySelector(".content")?.scrollIntoView({ behavior: "smooth" });
+    document.querySelector(".content")?.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+    });
   };
 
   return (
     <header className="hero" ref={containerRef}>
-      <Parallax speed={-50} className="hero__parallax" aria-hidden="true">
+      <Parallax
+        speed={prefersReducedMotion ? 0 : -50}
+        className="hero__parallax"
+        aria-hidden="true"
+      >
         <div
           className="hero__bg"
           style={{
@@ -106,19 +120,23 @@ export function Hero({ wedding }: HeroProps) {
 
       <div className="hero__fade" aria-hidden="true" />
 
-      <BouncyHeart
-        containerRef={containerRef}
-        physics={body1}
-        onPausedChange={setHeart1Paused}
-        onBounce={() => setImageIndex((i) => i + 1)}
-        onLongPressComplete={(pos) => setSecondHeartSpawn(pos)}
-      />
-      {secondHeartSpawn && (
-        <BouncyHeart
-          containerRef={containerRef}
-          physics={body2}
-          onBounce={() => setImageIndex((i) => i + 1)}
-        />
+      {!prefersReducedMotion && (
+        <>
+          <BouncyHeart
+            containerRef={containerRef}
+            physics={body1}
+            onPausedChange={setHeart1Paused}
+            onBounce={() => setImageIndex((i) => i + 1)}
+            onLongPressComplete={(pos) => setSecondHeartSpawn(pos)}
+          />
+          {secondHeartSpawn && (
+            <BouncyHeart
+              containerRef={containerRef}
+              physics={body2}
+              onBounce={() => setImageIndex((i) => i + 1)}
+            />
+          )}
+        </>
       )}
 
       <ScrollToRsvpLetter targetId="rsvp" label="OSA" />
@@ -126,7 +144,7 @@ export function Hero({ wedding }: HeroProps) {
       <button
         className="hero__scroll-arrow"
         onClick={handleScrollDown}
-        aria-label="Scroll down to information"
+        aria-label="Skrolla ner till information"
         type="button"
       >
         <svg

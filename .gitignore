@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Miljövariabler (Supabase-nycklar m.m.)
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

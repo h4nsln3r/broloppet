@@ -62,8 +62,3 @@ export const MOBILE_HERO_IMAGES = [
   hj17,
   hj16,
 ];
-
-/** Alla bilder som ska förladdas (union av desktop + mobile). */
-export const ALL_HERO_IMAGES = [
-  ...new Set([...DESKTOP_HERO_IMAGES, ...MOBILE_HERO_IMAGES]),
-];

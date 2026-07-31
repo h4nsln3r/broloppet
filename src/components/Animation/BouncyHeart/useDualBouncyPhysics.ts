@@ -134,8 +134,8 @@ export function useDualBouncyPhysics({
     };
 
     if (!paused1) {
-      let nx1 = x1.get() + vx1.current * dt;
-      let ny1 = y1.get() + vy1.current * dt;
+      const nx1 = x1.get() + vx1.current * dt;
+      const ny1 = y1.get() + vy1.current * dt;
       const r1 = step(nx1, ny1, vx1, vy1);
       x1.set(r1.x);
       y1.set(r1.y);
@@ -143,8 +143,8 @@ export function useDualBouncyPhysics({
     }
     const hasSecond = initial2 != null;
     if (hasSecond && !paused2) {
-      let nx2 = x2.get() + vx2.current * dt;
-      let ny2 = y2.get() + vy2.current * dt;
+      const nx2 = x2.get() + vx2.current * dt;
+      const ny2 = y2.get() + vy2.current * dt;
       const r2 = step(nx2, ny2, vx2, vy2);
       x2.set(r2.x);
       y2.set(r2.y);

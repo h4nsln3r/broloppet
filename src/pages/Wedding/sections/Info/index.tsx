@@ -69,6 +69,7 @@ export function Information() {
                 <span>
                   Vigseln börjar kl. {WEDDING.ceremony.time} i{" "}
                   <button
+                    type="button"
                     className={`place-button ${activeMap === "ceremony" ? "active" : ""}`}
                     onClick={() => handleSetActiveMap("ceremony")}
                   >
@@ -93,6 +94,7 @@ export function Information() {
                 <span className="">
                   Bröllopsfesten fortsätter sen på{" "}
                   <button
+                    type="button"
                     className={`place-button ${activeMap === "party" ? "active" : ""}`}
                     onClick={() => handleSetActiveMap("party")}
                   >
@@ -113,9 +115,10 @@ export function Information() {
             </li>
           </ul>
 
-          <div className="place-buttons-row">
+          <div className="place-buttons-row" role="group" aria-label="Visa plats på kartan">
             <button
               type="button"
+              aria-pressed={activeMap === "ceremony"}
               className={`place-button ${activeMap === "ceremony" ? "active" : ""}`}
               onClick={() => handleSetActiveMap("ceremony")}
             >
@@ -123,6 +126,7 @@ export function Information() {
             </button>
             <button
               type="button"
+              aria-pressed={activeMap === "party"}
               className={`place-button ${activeMap === "party" ? "active" : ""}`}
               onClick={() => handleSetActiveMap("party")}
             >
@@ -161,6 +165,7 @@ export function Information() {
           <h3>Hur tar man sig dit?</h3>
           <p className="transport-card__destination">
             <button
+              type="button"
               className={`place-button ${activeMap === "party" ? "active" : ""}`}
               onClick={() => handleSetActiveMap("party")}
             >
@@ -186,6 +191,7 @@ export function Information() {
                 <br />
                 Kliv av vid hållplats{" "}
                 <button
+                  type="button"
                   className={`place-button ${activeMap === "ceremony" ? "active" : ""}`}
                   onClick={() => handleSetActiveMap("ceremony")}
                 >
@@ -216,6 +222,7 @@ export function Information() {
               <p>
                 Det finns parkering både vid{" "}
                 <button
+                  type="button"
                   className={`place-button ${activeMap === "ceremony" ? "active" : ""}`}
                   onClick={() => handleSetActiveMap("ceremony")}
                 >
@@ -223,6 +230,7 @@ export function Information() {
                 </button>{" "}
                 och{" "}
                 <button
+                  type="button"
                   className={`place-button ${activeMap === "party" ? "active" : ""}`}
                   onClick={() => handleSetActiveMap("party")}
                 >
@@ -290,7 +298,6 @@ export function Information() {
               </span>
             </p>
           </div>
-          {/* <FlowerBouquet className="flower" speed={1} /> */}
         </div>
       </div>
       <br />

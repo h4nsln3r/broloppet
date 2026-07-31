@@ -21,6 +21,13 @@ export function useScrollToMap(): (scrollAfter?: boolean) => void {
     const rect = el.getBoundingClientRect();
     const targetY = rect.top + startY - SCROLL_OFFSET;
     const distance = targetY - startY;
+
+    // Respektera minskad rörelse: hoppa direkt utan animation.
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      window.scrollTo(0, Math.round(targetY));
+      return;
+    }
+
     let startTime: number | null = null;
 
     const step = (timestamp: number) => {

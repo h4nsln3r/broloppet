@@ -5,6 +5,7 @@ import "./FotoPage.scss";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 type ViewMode = "upload" | "gallery" | "slideshow";
+type FailedUpload = { name: string; reason: string };
 
 const SLIDESHOW_INTERVAL_MS = 5000;
 
@@ -17,15 +18,54 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+/** Översätter vanliga Supabase Storage-fel till begripliga svenska meddelanden. */
+function describeUploadError(rawMessage: string): string {
+  const m = rawMessage.toLowerCase();
+  if (
+    m.includes("row-level security") ||
+    m.includes("unauthorized") ||
+    m.includes("permission") ||
+    m.includes("policy") ||
+    m.includes("403")
+  ) {
+    return "Saknar behörighet – uppladdningspolicyn i Supabase tillåter inte detta.";
+  }
+  if (m.includes("bucket not found") || m.includes("not found")) {
+    return "Lagringsutrymmet (bucket) hittades inte.";
+  }
+  if (m.includes("already exists") || m.includes("duplicate")) {
+    return "En fil med samma namn finns redan.";
+  }
+  if (
+    m.includes("payload too large") ||
+    m.includes("maximum allowed size") ||
+    m.includes("exceeded") ||
+    m.includes("413")
+  ) {
+    return "Filen är för stor.";
+  }
+  if (
+    m.includes("failed to fetch") ||
+    m.includes("network") ||
+    m.includes("load failed") ||
+    m.includes("timeout")
+  ) {
+    return "Nätverksfel – kontrollera din anslutning och försök igen.";
+  }
+  return rawMessage || "Okänt fel.";
+}
+
 export function FotoPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [failedUploads, setFailedUploads] = useState<FailedUpload[]>([]);
+  const [successCount, setSuccessCount] = useState(0);
   const [images, setImages] = useState<{ name: string; url: string }[]>([]);
   const [mode, setMode] = useState<ViewMode>("upload");
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [randomOrder, setRandomOrder] = useState(false);
-  const orderIndicesRef = useRef<number[]>([]);
+  const [orderIndices, setOrderIndices] = useState<number[]>([]);
   const slideshowTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchImages = useCallback(async () => {
@@ -51,6 +91,8 @@ export function FotoPage() {
   }, []);
 
   useEffect(() => {
+    // Hämtar bilder vid mount; setState sker asynkront efter nätverksanropet.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchImages();
   }, [fetchImages]);
 
@@ -58,15 +100,9 @@ export function FotoPage() {
     setMode("slideshow");
     setSlideshowIndex(0);
     setRandomOrder(false);
-    orderIndicesRef.current = images.map((_, i) => i);
+    setOrderIndices(images.map((_, i) => i));
     document.documentElement.requestFullscreen?.().catch(() => {});
   }, [images]);
-
-  useEffect(() => {
-    if (mode === "slideshow" && images.length > 0 && orderIndicesRef.current.length !== images.length) {
-      orderIndicesRef.current = images.map((_, i) => i);
-    }
-  }, [mode, images]);
 
   useEffect(() => {
     if (mode !== "slideshow" || images.length === 0) return;
@@ -82,7 +118,6 @@ export function FotoPage() {
     };
   }, [mode, images.length, randomOrder]);
 
-  const orderIndices = orderIndicesRef.current;
   const currentImage =
     orderIndices.length > 0 && orderIndices[slideshowIndex] !== undefined
       ? images[orderIndices[slideshowIndex]]
@@ -102,10 +137,10 @@ export function FotoPage() {
     setRandomOrder((prev) => {
       setSlideshowIndex(0);
       if (prev) {
-        orderIndicesRef.current = images.map((_, i) => i);
+        setOrderIndices(images.map((_, i) => i));
         return false;
       } else {
-        orderIndicesRef.current = shuffle(images.map((_, i) => i));
+        setOrderIndices(shuffle(images.map((_, i) => i)));
         return true;
       }
     });
@@ -116,49 +151,106 @@ export function FotoPage() {
     document.exitFullscreen?.();
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    const f = Array.from(e.dataTransfer.files).filter((file) =>
-      file.type.startsWith("image/")
-    );
-    setFiles((prev) => [...prev, ...f]);
+  useEffect(() => {
+    if (mode !== "slideshow") return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") exitSlideshow();
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "ArrowRight") goNext();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mode, exitSlideshow, goPrev, goNext]);
+
+  const resetUploadStatus = useCallback(() => {
+    setStatus("idle");
+    setError(null);
+    setFailedUploads([]);
+    setSuccessCount(0);
   }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const f = Array.from(e.dataTransfer.files).filter((file) =>
+        file.type.startsWith("image/")
+      );
+      if (f.length === 0) return;
+      resetUploadStatus();
+      setFiles((prev) => [...prev, ...f]);
+    },
+    [resetUploadStatus]
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "copy";
   }, []);
 
-  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = Array.from(e.target.files ?? []).filter((file) =>
-      file.type.startsWith("image/")
-    );
-    setFiles((prev) => [...prev, ...f]);
-    e.target.value = "";
-  }, []);
+  const handleFileInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const f = Array.from(e.target.files ?? []).filter((file) =>
+        file.type.startsWith("image/")
+      );
+      e.target.value = "";
+      if (f.length === 0) return;
+      resetUploadStatus();
+      setFiles((prev) => [...prev, ...f]);
+    },
+    [resetUploadStatus]
+  );
 
   const removeFile = useCallback((index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const upload = useCallback(async () => {
-    if (!supabase || files.length === 0) return;
+    const client = supabase;
+    if (!client || files.length === 0) return;
     setStatus("uploading");
     setError(null);
-    try {
-      for (const file of files) {
-        const name = `${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
-        await supabase.storage.from(WEDDING_PHOTOS_BUCKET).upload(name, file, {
-          cacheControl: "3600",
-          upsert: false,
+    setFailedUploads([]);
+    setSuccessCount(0);
+
+    const failed: { file: File; reason: string }[] = [];
+
+    for (const file of files) {
+      const name = `${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
+      try {
+        const { error: uploadError } = await client.storage
+          .from(WEDDING_PHOTOS_BUCKET)
+          .upload(name, file, { cacheControl: "3600", upsert: false });
+        // Supabase kastar inte vid fel – felet returneras i `error`.
+        if (uploadError) {
+          failed.push({ file, reason: describeUploadError(uploadError.message) });
+        }
+      } catch (err) {
+        failed.push({
+          file,
+          reason: describeUploadError(err instanceof Error ? err.message : ""),
         });
       }
-      setFiles([]);
+    }
+
+    await fetchImages();
+
+    const succeeded = files.length - failed.length;
+    setSuccessCount(succeeded);
+    setFailedUploads(failed.map(({ file, reason }) => ({ name: file.name, reason })));
+    // Behåll bara filer som misslyckades, så användaren kan försöka igen.
+    setFiles(failed.map((f) => f.file));
+
+    if (failed.length === 0) {
       setStatus("success");
-      await fetchImages();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Något gick fel");
+    } else {
       setStatus("error");
+      setError(
+        succeeded > 0
+          ? `${succeeded} av ${files.length} bilder laddades upp. ${failed.length} misslyckades:`
+          : failed.length > 1
+            ? "Ingen av bilderna kunde laddas upp:"
+            : "Bilden kunde inte laddas upp:"
+      );
     }
   }, [files, fetchImages]);
 
@@ -176,17 +268,6 @@ export function FotoPage() {
       </div>
     );
   }
-
-  useEffect(() => {
-    if (mode !== "slideshow") return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") exitSlideshow();
-      if (e.key === "ArrowLeft") goPrev();
-      if (e.key === "ArrowRight") goNext();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [mode, exitSlideshow, goPrev, goNext]);
 
   return (
     <div className={`foto-page ${mode === "gallery" ? "foto-page--gallery" : ""}`}>
@@ -274,10 +355,34 @@ export function FotoPage() {
             )}
 
             {status === "success" && (
-              <p className="foto-upload__success">Tack! Bilderna är uppladdade.</p>
+              <p className="foto-upload__success" role="status">
+                Tack!{" "}
+                {successCount > 1
+                  ? `${successCount} bilder är uppladdade.`
+                  : "Bilden är uppladdad."}
+              </p>
             )}
-            {status === "error" && error && (
-              <p className="foto-upload__error">{error}</p>
+            {status === "error" && (
+              <div className="foto-upload__error" role="alert">
+                {error && <p className="foto-upload__error-msg">{error}</p>}
+                {failedUploads.length > 0 && (
+                  <ul className="foto-upload__error-list">
+                    {failedUploads.map((f, i) => (
+                      <li key={i}>
+                        <span className="foto-upload__error-file">{f.name}</span>
+                        {" – "}
+                        {f.reason}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {files.length > 0 && (
+                  <p className="foto-upload__error-hint muted tiny">
+                    Bilderna som misslyckades ligger kvar i listan – tryck på
+                    &quot;Ladda upp&quot; för att försöka igen.
+                  </p>
+                )}
+              </div>
             )}
           </div>
         )}
