@@ -10,6 +10,11 @@ import { WeddingPage } from "./pages/Wedding/WeddingPage";
 const FotoPage = lazy(() =>
   import("./pages/Foto/FotoPage").then((m) => ({ default: m.FotoPage }))
 );
+const FotoAdminPage = lazy(() =>
+  import("./pages/Foto/FotoAdminPage").then((m) => ({
+    default: m.FotoAdminPage,
+  }))
+);
 const QRCodePage = lazy(() =>
   import("./pages/QrCode/QRCodePage").then((m) => ({ default: m.QRCodePage }))
 );
@@ -21,6 +26,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<WeddingPage />} />
           <Route path="/foto" element={<FotoPage />} />
+          <Route path="/foto/admin" element={<FotoAdminPage />} />
           <Route path="/qrcode" element={<QRCodePage />} />
         </Routes>
       </Suspense>

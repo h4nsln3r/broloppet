@@ -62,6 +62,27 @@
   }
 }
 
+.foto-page__admin-secret {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 20px auto 0;
+  font-size: 0.7rem;
+  line-height: 1;
+  color: var(--text);
+  text-decoration: none;
+  opacity: 0.12;
+  border-radius: $radius-full;
+  transition: opacity var(--transition-fast);
+
+  &:hover,
+  &:focus-visible {
+    opacity: 0.45;
+  }
+}
+
 .foto-page h1 {
   margin: 20px 0 8px;
   padding: 0 40px;

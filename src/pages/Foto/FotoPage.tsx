@@ -123,7 +123,7 @@ function describeUploadError(rawMessage: string): string {
     m.includes("policy") ||
     m.includes("403")
   ) {
-    return "Saknar behörighet – uppladdningspolicyn i Supabase tillåter inte detta.";
+    return "Saknar behörighet – Storage-policyn i Supabase tillåter inte detta.";
   }
   if (m.includes("bucket not found") || m.includes("not found")) {
     return "Lagringsutrymmet (bucket) hittades inte.";
@@ -157,6 +157,7 @@ export function FotoPage() {
   const [failedUploads, setFailedUploads] = useState<FailedUpload[]>([]);
   const [successCount, setSuccessCount] = useState(0);
   const [images, setImages] = useState<{ name: string; url: string }[]>([]);
+  const [galleryError, setGalleryError] = useState<string | null>(null);
   const [mode, setMode] = useState<ViewMode>("upload");
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [randomOrder, setRandomOrder] = useState(false);
@@ -227,8 +228,10 @@ export function FotoPage() {
       .list("", { limit: 200 });
     if (error) {
       console.error(error);
+      setGalleryError(describeUploadError(error.message));
       return;
     }
+    setGalleryError(null);
     const files = (data ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder");
     const urls = await Promise.all(
       files.map(async (f) => {
@@ -607,7 +610,11 @@ export function FotoPage() {
 
         {mode === "gallery" && (
           <div className="foto-gallery">
-            {images.length === 0 ? (
+            {galleryError ? (
+              <p className="foto-upload__error-msg" role="alert">
+                Kunde inte hämta galleriet: {galleryError}
+              </p>
+            ) : images.length === 0 ? (
               <p className="muted">Inga bilder ännu.</p>
             ) : (
               <div className="foto-gallery__grid">
@@ -831,6 +838,30 @@ export function FotoPage() {
           </div>
         )}
       </div>
+
+      {mode !== "slideshow" && (
+        <Link
+          to="/foto/admin"
+          className="foto-page__admin-secret"
+          aria-label="Admin"
+          title="Admin"
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="5" y="11" width="14" height="10" rx="1" />
+            <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+          </svg>
+        </Link>
+      )}
     </div>
   );
 }

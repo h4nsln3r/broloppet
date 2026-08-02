@@ -1,0 +1,115 @@
+@use "../../styles/variables" as *;
+
+.foto-admin__login {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.foto-admin__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+
+  span {
+    color: var(--muted);
+  }
+
+  input {
+    padding: 10px 12px;
+    border: 1px solid rgba(154, 143, 130, 0.35);
+    border-radius: $radius-sm;
+    background: rgba(255, 255, 255, 0.85);
+    font-family: $font-body;
+    font-size: 1rem;
+    color: var(--text);
+
+    &:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.foto-admin__toolbar {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.foto-admin__secondary {
+  padding: 8px 16px;
+  border: 1px solid rgba(154, 143, 130, 0.35);
+  border-radius: $radius-sm;
+  background: rgba(255, 255, 255, 0.7);
+  font-family: $font-body;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover:not(:disabled) {
+    background: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.foto-admin__status {
+  text-align: center;
+  margin: 0 0 16px;
+  color: var(--accent-strong, #7a6f64);
+  font-size: 0.95rem;
+}
+
+.foto-admin__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.foto-admin__item {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.04);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.foto-admin__delete {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: $radius-sm;
+  background: rgba(44, 37, 32, 0.88);
+  color: #fff;
+  font-family: $font-body;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  &:hover:not(:disabled) {
+    background: #8b3a2a;
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
