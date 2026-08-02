@@ -204,8 +204,6 @@ VITE_SUPABASE_ANON_KEY=din-supabase-anon-key
 | `VITE_SUPABASE_URL` | `src/lib/supabase.ts` | `/foto` |
 | `VITE_SUPABASE_ANON_KEY` | `src/lib/supabase.ts` | `/foto` |
 
-> **Obs:** `.env` ligger idag inte i `.gitignore` (endast `*.local` ignoreras). Överväg att lägga till `.env` i `.gitignore` så att nycklar inte checkas in av misstag.
-
 ---
 
 ## Deploy
