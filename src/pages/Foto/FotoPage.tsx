@@ -1,13 +1,32 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  type Variants,
+} from "framer-motion";
 import { supabase, WEDDING_PHOTOS_BUCKET } from "../../lib/supabase";
 import "./FotoPage.scss";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 type ViewMode = "upload" | "gallery" | "slideshow";
 type FailedUpload = { name: string; reason: string };
+type SlideDirection = 1 | -1;
+type TransitionEffect = "fade" | "slide" | "zoom" | "flip" | "soft";
 
-const SLIDESHOW_INTERVAL_MS = 5000;
+const SLIDESHOW_INTERVAL_MS = 6000;
+const SLIDE_TRANSITION_S = 0.7;
+const CONTROLS_IDLE_MS = 2500;
+const DEFAULT_SLIDESHOW_BG = "#14110f";
+
+const EFFECT_OPTIONS: { id: TransitionEffect; label: string }[] = [
+  { id: "fade", label: "Tona" },
+  { id: "slide", label: "Skjut" },
+  { id: "zoom", label: "Zooma" },
+  { id: "flip", label: "Vänd" },
+  { id: "soft", label: "Mjuk" },
+];
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -16,6 +35,82 @@ function shuffle<T>(arr: T[]): T[] {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+/** Fisher–Yates med valfri garanti att första index ≠ avoidFirst. */
+function reshuffle(count: number, avoidFirst?: number): number[] {
+  const order = shuffle(Array.from({ length: count }, (_, i) => i));
+  if (avoidFirst !== undefined && count > 1 && order[0] === avoidFirst) {
+    const swapWith = 1 + Math.floor(Math.random() * (count - 1));
+    [order[0], order[swapWith]] = [order[swapWith], order[0]];
+  }
+  return order;
+}
+
+function sequentialOrder(count: number): number[] {
+  return Array.from({ length: count }, (_, i) => i);
+}
+
+function getSlideVariants(
+  effect: TransitionEffect,
+  reduced: boolean | null
+): Variants {
+  if (reduced) {
+    return {
+      enter: { opacity: 0 },
+      center: { opacity: 1 },
+      exit: { opacity: 0 },
+    };
+  }
+
+  switch (effect) {
+    case "fade":
+      return {
+        enter: { opacity: 0 },
+        center: { opacity: 1 },
+        exit: { opacity: 0 },
+      };
+    case "slide":
+      return {
+        enter: (dir: SlideDirection) => ({ opacity: 0, x: dir * 64 }),
+        center: { opacity: 1, x: 0 },
+        exit: (dir: SlideDirection) => ({ opacity: 0, x: dir * -48 }),
+      };
+    case "zoom":
+      return {
+        enter: { opacity: 0, scale: 1.14 },
+        center: { opacity: 1, scale: 1 },
+        exit: { opacity: 0, scale: 0.9 },
+      };
+    case "flip":
+      return {
+        enter: (dir: SlideDirection) => ({
+          opacity: 0.35,
+          rotateY: dir * 78,
+          scale: 0.94,
+        }),
+        center: { opacity: 1, rotateY: 0, scale: 1 },
+        exit: (dir: SlideDirection) => ({
+          opacity: 0,
+          rotateY: dir * -60,
+          scale: 0.96,
+        }),
+      };
+    case "soft":
+      return {
+        enter: (dir: SlideDirection) => ({
+          opacity: 0,
+          x: dir * 28,
+          filter: "blur(10px)",
+        }),
+        center: { opacity: 1, x: 0, filter: "blur(0px)" },
+        exit: (dir: SlideDirection) => ({
+          opacity: 0,
+          x: dir * -18,
+          filter: "blur(8px)",
+        }),
+      };
+  }
 }
 
 /** Översätter vanliga Supabase Storage-fel till begripliga svenska meddelanden. */
@@ -66,7 +161,63 @@ export function FotoPage() {
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [randomOrder, setRandomOrder] = useState(false);
   const [orderIndices, setOrderIndices] = useState<number[]>([]);
-  const slideshowTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [slideDirection, setSlideDirection] = useState<SlideDirection>(1);
+  const [configOpen, setConfigOpen] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const [slideshowBg, setSlideshowBg] = useState(DEFAULT_SLIDESHOW_BG);
+  const [transitionEffect, setTransitionEffect] =
+    useState<TransitionEffect>("slide");
+  const prefersReducedMotion = useReducedMotion();
+  const advanceRef = useRef<(dir: SlideDirection) => void>(() => {});
+  const idleTimerRef = useRef<number | null>(null);
+  const configOpenRef = useRef(false);
+
+  const chromeVisible = controlsVisible || configOpen;
+
+  useEffect(() => {
+    configOpenRef.current = configOpen;
+  }, [configOpen]);
+
+  const clearIdleTimer = useCallback(() => {
+    if (idleTimerRef.current !== null) {
+      window.clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleHideControls = useCallback(() => {
+    clearIdleTimer();
+    idleTimerRef.current = window.setTimeout(() => {
+      if (configOpenRef.current) return;
+      setControlsVisible(false);
+    }, CONTROLS_IDLE_MS);
+  }, [clearIdleTimer]);
+
+  const revealControls = useCallback(() => {
+    setControlsVisible(true);
+    scheduleHideControls();
+  }, [scheduleHideControls]);
+
+  const openConfig = useCallback(() => {
+    clearIdleTimer();
+    setControlsVisible(true);
+    setConfigOpen(true);
+  }, [clearIdleTimer]);
+
+  const closeConfig = useCallback(() => {
+    setConfigOpen(false);
+    scheduleHideControls();
+  }, [scheduleHideControls]);
+
+  const toggleConfig = useCallback(() => {
+    if (configOpen) closeConfig();
+    else openConfig();
+  }, [configOpen, closeConfig, openConfig]);
+
+  const slideVariants = useMemo(
+    () => getSlideVariants(transitionEffect, prefersReducedMotion),
+    [transitionEffect, prefersReducedMotion]
+  );
 
   const fetchImages = useCallback(async () => {
     const client = supabase;
@@ -100,67 +251,134 @@ export function FotoPage() {
     setMode("slideshow");
     setSlideshowIndex(0);
     setRandomOrder(false);
-    setOrderIndices(images.map((_, i) => i));
+    setSlideDirection(1);
+    setConfigOpen(false);
+    setControlsVisible(true);
+    setOrderIndices(sequentialOrder(images.length));
+    scheduleHideControls();
     document.documentElement.requestFullscreen?.().catch(() => {});
-  }, [images]);
+  }, [images.length, scheduleHideControls]);
+
+  /** Bygger om ordningen om bildlistan ändras under bildspelet. */
+  useEffect(() => {
+    if (mode !== "slideshow") return;
+    const n = images.length;
+    if (n === 0) return;
+    // Synkar spelets indexordning mot galleriet – medvetet state-sync.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOrderIndices((prev) => {
+      const valid = prev.length === n && prev.every((idx) => idx >= 0 && idx < n);
+      if (valid) return prev;
+      return randomOrder ? reshuffle(n) : sequentialOrder(n);
+    });
+    setSlideshowIndex((i) => (i >= n ? Math.max(0, n - 1) : i));
+  }, [images.length, mode, randomOrder]);
+
+  const advance = useCallback(
+    (dir: SlideDirection) => {
+      const n = images.length;
+      if (n === 0) return;
+
+      setSlideDirection(dir);
+
+      if (!randomOrder) {
+        setSlideshowIndex((i) => (i + dir + n) % n);
+        return;
+      }
+
+      const i = slideshowIndex;
+      const order = orderIndices;
+      const next = i + dir;
+
+      if (next >= order.length) {
+        const lastImageIdx = order[i];
+        setOrderIndices(reshuffle(n, lastImageIdx));
+        setSlideshowIndex(0);
+        return;
+      }
+      if (next < 0) {
+        const firstImageIdx = order[0];
+        const newOrder = reshuffle(n, firstImageIdx);
+        setOrderIndices(newOrder);
+        setSlideshowIndex(newOrder.length - 1);
+        return;
+      }
+      setSlideshowIndex(next);
+    },
+    [images.length, randomOrder, slideshowIndex, orderIndices]
+  );
+
+  const goPrev = useCallback(() => advance(-1), [advance]);
+  const goNext = useCallback(() => advance(1), [advance]);
 
   useEffect(() => {
+    advanceRef.current = advance;
+  }, [advance]);
+
+  /** Timeout per bild – startas om vid varje byte (även manuell), så timing hålls jämn. */
+  useEffect(() => {
     if (mode !== "slideshow" || images.length === 0) return;
-    const n = images.length;
-    slideshowTimerRef.current = setInterval(() => {
-      setSlideshowIndex((i) => (i + 1) % n);
+    const id = window.setTimeout(() => {
+      advanceRef.current(1);
     }, SLIDESHOW_INTERVAL_MS);
-    return () => {
-      if (slideshowTimerRef.current) {
-        clearInterval(slideshowTimerRef.current);
-        slideshowTimerRef.current = null;
-      }
-    };
-  }, [mode, images.length, randomOrder]);
+    return () => window.clearTimeout(id);
+  }, [mode, images.length, slideshowIndex]);
 
-  const currentImage =
+  const currentImageIndex =
     orderIndices.length > 0 && orderIndices[slideshowIndex] !== undefined
-      ? images[orderIndices[slideshowIndex]]
-      : images[slideshowIndex];
+      ? orderIndices[slideshowIndex]
+      : slideshowIndex;
+  const currentImage = images[currentImageIndex];
 
-  const goPrev = useCallback(() => {
-    const n = images.length;
-    setSlideshowIndex((i) => (i - 1 + n) % n);
-  }, [images.length]);
-
-  const goNext = useCallback(() => {
-    const n = images.length;
-    setSlideshowIndex((i) => (i + 1) % n);
-  }, [images.length]);
+  const nextImageIndex =
+    orderIndices.length > 0
+      ? orderIndices[(slideshowIndex + 1) % orderIndices.length]
+      : (slideshowIndex + 1) % Math.max(images.length, 1);
+  const nextImage = images[nextImageIndex];
 
   const toggleRandom = useCallback(() => {
-    setRandomOrder((prev) => {
-      setSlideshowIndex(0);
-      if (prev) {
-        setOrderIndices(images.map((_, i) => i));
-        return false;
-      } else {
-        setOrderIndices(shuffle(images.map((_, i) => i)));
-        return true;
-      }
-    });
-  }, [images]);
+    const n = images.length;
+    if (n === 0) return;
+
+    const currentRealIndex = orderIndices[slideshowIndex] ?? slideshowIndex;
+
+    if (randomOrder) {
+      setRandomOrder(false);
+      setOrderIndices(sequentialOrder(n));
+      setSlideshowIndex(Math.min(currentRealIndex, n - 1));
+      return;
+    }
+
+    const rest = sequentialOrder(n).filter((idx) => idx !== currentRealIndex);
+    setOrderIndices([currentRealIndex, ...shuffle(rest)]);
+    setSlideshowIndex(0);
+    setRandomOrder(true);
+  }, [images.length, orderIndices, slideshowIndex, randomOrder]);
 
   const exitSlideshow = useCallback(() => {
+    clearIdleTimer();
     setMode("gallery");
+    setConfigOpen(false);
+    setControlsVisible(true);
     document.exitFullscreen?.();
-  }, []);
+  }, [clearIdleTimer]);
 
   useEffect(() => {
     if (mode !== "slideshow") return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") exitSlideshow();
+      if (e.key === "Escape") {
+        if (configOpen) {
+          closeConfig();
+          return;
+        }
+        exitSlideshow();
+      }
       if (e.key === "ArrowLeft") goPrev();
       if (e.key === "ArrowRight") goNext();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [mode, exitSlideshow, goPrev, goNext]);
+  }, [mode, exitSlideshow, goPrev, goNext, configOpen, closeConfig]);
 
   const resetUploadStatus = useCallback(() => {
     setStatus("idle");
@@ -411,79 +629,204 @@ export function FotoPage() {
 
         {mode === "slideshow" && images.length > 0 && (
           <div
-            className="foto-slideshow"
+            className={`foto-slideshow${chromeVisible ? " foto-slideshow--controls-visible" : ""}`}
             role="region"
             aria-label="Bildspel"
+            aria-live="polite"
+            style={{ backgroundColor: slideshowBg }}
+            onMouseMove={revealControls}
+            onTouchStart={revealControls}
           >
-            <button
-              type="button"
-              role="switch"
-              aria-checked={randomOrder}
-              className="foto-slideshow__toggle"
-              onClick={toggleRandom}
-              aria-label={randomOrder ? "Slumpad ordning – klicka för att stänga av" : "Slumpad ordning – klicka för att slå på"}
-              title={randomOrder ? "Slumpad ordning på" : "Slumpad ordning av"}
-            >
-              <span
-                className="foto-slideshow__toggle-track"
-                style={{
-                  background: randomOrder
-                    ? "rgba(107, 83, 68, 0.5)"
-                    : "rgba(154, 143, 130, 0.3)",
-                }}
-              >
-                <span
-                  className="foto-slideshow__toggle-thumb"
-                  style={{
-                    transform: randomOrder ? "translateX(16px)" : "translateX(0)",
-                    background: randomOrder ? "#6b5344" : "#fff",
-                  }}
-                />
-              </span>
-              <span
-                className="foto-slideshow__toggle-label"
-                style={{
-                  color: randomOrder ? "#6b5344" : undefined,
-                  fontWeight: randomOrder ? 600 : 500,
-                }}
-              >
-                Rand
-              </span>
-            </button>
-            <button
-              type="button"
-              className="foto-slideshow__close"
-              onClick={exitSlideshow}
-              aria-label="Avsluta bildspel"
-            >
-              ✕
-            </button>
-            <button
-              type="button"
-              className="foto-slideshow__nav foto-slideshow__nav--prev"
-              onClick={goPrev}
-              aria-label="Föregående bild"
-            >
-              ←
-            </button>
-            <div className="foto-slideshow__image-wrap">
+            {nextImage?.url && (
               <img
-                key={currentImage?.name ?? slideshowIndex}
-                src={currentImage?.url}
+                src={nextImage.url}
                 alt=""
-                className="foto-slideshow__image"
+                className="foto-slideshow__preload"
+                aria-hidden="true"
               />
-            </div>
-            <button
-              type="button"
-              className="foto-slideshow__nav foto-slideshow__nav--next"
-              onClick={goNext}
-              aria-label="Nästa bild"
+            )}
+
+            <div
+              className={`foto-slideshow__image-wrap${transitionEffect === "flip" ? " foto-slideshow__image-wrap--flip" : ""}`}
             >
-              →
-            </button>
-            <div className="foto-slideshow__counter">
-              {slideshowIndex + 1} / {images.length}
+              <AnimatePresence initial={false} custom={slideDirection} mode="sync">
+                <motion.div
+                  key={currentImage?.name ?? slideshowIndex}
+                  className="foto-slideshow__slide"
+                  custom={slideDirection}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{
+                    duration: prefersReducedMotion ? 0.01 : SLIDE_TRANSITION_S,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  <img
+                    src={currentImage?.url}
+                    alt=""
+                    className={`foto-slideshow__image${
+                      prefersReducedMotion || transitionEffect === "flip"
+                        ? ""
+                        : " foto-slideshow__image--kenburns"
+                    }`}
+                    draggable={false}
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            <div className="foto-slideshow__chrome">
+              <div className="foto-slideshow__admin">
+                <button
+                  type="button"
+                  className={`foto-slideshow__admin-toggle${configOpen ? " is-open" : ""}`}
+                  onClick={toggleConfig}
+                  aria-expanded={configOpen}
+                  aria-controls="foto-slideshow-config"
+                  aria-label={
+                    configOpen
+                      ? "Stäng inställningar"
+                      : "Öppna bildspelsinställningar"
+                  }
+                >
+                  <span className="foto-slideshow__admin-icon" aria-hidden="true">
+                    ⚙
+                  </span>
+                  <span>Inställningar</span>
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {configOpen && (
+                    <motion.div
+                      id="foto-slideshow-config"
+                      className="foto-slideshow__config"
+                      role="dialog"
+                      aria-label="Bildspelsinställningar"
+                      initial={
+                        prefersReducedMotion
+                          ? { opacity: 0 }
+                          : { opacity: 0, y: -12, scale: 0.94 }
+                      }
+                      animate={
+                        prefersReducedMotion
+                          ? { opacity: 1 }
+                          : { opacity: 1, y: 0, scale: 1 }
+                      }
+                      exit={
+                        prefersReducedMotion
+                          ? { opacity: 0 }
+                          : { opacity: 0, y: -10, scale: 0.96 }
+                      }
+                      transition={{
+                        duration: prefersReducedMotion ? 0.01 : 0.38,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      style={{ transformOrigin: "top left" }}
+                    >
+                      <div className="foto-slideshow__config-section">
+                        <p className="foto-slideshow__config-label">Ordning</p>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={randomOrder}
+                          className={`foto-slideshow__switch${randomOrder ? " is-on" : ""}`}
+                          onClick={toggleRandom}
+                        >
+                          <span className="foto-slideshow__switch-track">
+                            <span className="foto-slideshow__switch-thumb" />
+                          </span>
+                          <span>Slumpa bilder</span>
+                        </button>
+                      </div>
+
+                      <div className="foto-slideshow__config-section">
+                        <p className="foto-slideshow__config-label">Bakgrund</p>
+                        <div className="foto-slideshow__bg-row">
+                          <label className="foto-slideshow__color">
+                            <span className="visually-hidden">Välj bakgrundsfärg</span>
+                            <input
+                              type="color"
+                              value={slideshowBg}
+                              onChange={(e) => setSlideshowBg(e.target.value)}
+                              aria-label="Bakgrundsfärg"
+                            />
+                            <span
+                              className="foto-slideshow__color-swatch"
+                              style={{ backgroundColor: slideshowBg }}
+                              aria-hidden="true"
+                            />
+                            <span className="foto-slideshow__color-value">
+                              {slideshowBg}
+                            </span>
+                          </label>
+                          <button
+                            type="button"
+                            className="foto-slideshow__config-btn"
+                            onClick={() => setSlideshowBg(DEFAULT_SLIDESHOW_BG)}
+                            disabled={slideshowBg === DEFAULT_SLIDESHOW_BG}
+                          >
+                            Standard
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="foto-slideshow__config-section">
+                        <p className="foto-slideshow__config-label">Byte-effekt</p>
+                        <div
+                          className="foto-slideshow__effects"
+                          role="radiogroup"
+                          aria-label="Övergångseffekt"
+                        >
+                          {EFFECT_OPTIONS.map((opt) => (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              role="radio"
+                              aria-checked={transitionEffect === opt.id}
+                              className={`foto-slideshow__effect${
+                                transitionEffect === opt.id ? " is-active" : ""
+                              }`}
+                              onClick={() => setTransitionEffect(opt.id)}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <button
+                type="button"
+                className="foto-slideshow__close"
+                onClick={exitSlideshow}
+                aria-label="Avsluta bildspel"
+              >
+                ✕
+              </button>
+              <button
+                type="button"
+                className="foto-slideshow__nav foto-slideshow__nav--prev"
+                onClick={goPrev}
+                aria-label="Föregående bild"
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                className="foto-slideshow__nav foto-slideshow__nav--next"
+                onClick={goNext}
+                aria-label="Nästa bild"
+              >
+                →
+              </button>
+              <div className="foto-slideshow__counter">
+                {slideshowIndex + 1} / {images.length}
+              </div>
             </div>
           </div>
         )}
