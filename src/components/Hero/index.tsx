@@ -47,8 +47,7 @@ export function Hero({ wedding }: HeroProps) {
 
   const { body1, body2 } = useDualBouncyPhysics({
     containerRef,
-    paused1: heart1Paused || !!prefersReducedMotion,
-    paused2: !!prefersReducedMotion,
+    paused1: heart1Paused,
     onBounce1: () => setImageIndex((i) => i + 1),
     onBounce2: () => setImageIndex((i) => i + 1),
     initial2: secondHeartSpawn ?? undefined,
@@ -120,23 +119,19 @@ export function Hero({ wedding }: HeroProps) {
 
       <div className="hero__fade" aria-hidden="true" />
 
-      {!prefersReducedMotion && (
-        <>
-          <BouncyHeart
-            containerRef={containerRef}
-            physics={body1}
-            onPausedChange={setHeart1Paused}
-            onBounce={() => setImageIndex((i) => i + 1)}
-            onLongPressComplete={(pos) => setSecondHeartSpawn(pos)}
-          />
-          {secondHeartSpawn && (
-            <BouncyHeart
-              containerRef={containerRef}
-              physics={body2}
-              onBounce={() => setImageIndex((i) => i + 1)}
-            />
-          )}
-        </>
+      <BouncyHeart
+        containerRef={containerRef}
+        physics={body1}
+        onPausedChange={setHeart1Paused}
+        onBounce={() => setImageIndex((i) => i + 1)}
+        onLongPressComplete={(pos) => setSecondHeartSpawn(pos)}
+      />
+      {secondHeartSpawn && (
+        <BouncyHeart
+          containerRef={containerRef}
+          physics={body2}
+          onBounce={() => setImageIndex((i) => i + 1)}
+        />
       )}
 
       <ScrollToRsvpLetter targetId="rsvp" label="OSA" />
