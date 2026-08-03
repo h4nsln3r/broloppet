@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import {
   AnimatePresence,
@@ -15,10 +15,18 @@ type FailedUpload = { name: string; reason: string };
 type SlideDirection = 1 | -1;
 type TransitionEffect = "fade" | "slide" | "zoom" | "flip" | "soft";
 
-const SLIDESHOW_INTERVAL_MS = 6000;
+const DEFAULT_SLIDESHOW_INTERVAL_MS = 6000;
+const SLIDESHOW_INTERVAL_MIN_MS = 2000;
+const SLIDESHOW_INTERVAL_MAX_MS = 15000;
+const SLIDESHOW_INTERVAL_STEP_MS = 1000;
 const SLIDE_TRANSITION_S = 0.7;
 const CONTROLS_IDLE_MS = 2500;
 const DEFAULT_SLIDESHOW_BG = "#14110f";
+
+function formatIntervalSeconds(ms: number): string {
+  const seconds = Math.round(ms / 1000);
+  return seconds === 1 ? "1 sekund" : `${seconds} sekunder`;
+}
 
 const EFFECT_OPTIONS: { id: TransitionEffect; label: string }[] = [
   { id: "fade", label: "Tona" },
@@ -51,18 +59,7 @@ function sequentialOrder(count: number): number[] {
   return Array.from({ length: count }, (_, i) => i);
 }
 
-function getSlideVariants(
-  effect: TransitionEffect,
-  reduced: boolean | null
-): Variants {
-  if (reduced) {
-    return {
-      enter: { opacity: 0 },
-      center: { opacity: 1 },
-      exit: { opacity: 0 },
-    };
-  }
-
+function getSlideVariants(effect: TransitionEffect): Variants {
   switch (effect) {
     case "fade":
       return {
@@ -166,6 +163,9 @@ export function FotoPage() {
   const [configOpen, setConfigOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [slideshowBg, setSlideshowBg] = useState(DEFAULT_SLIDESHOW_BG);
+  const [slideshowIntervalMs, setSlideshowIntervalMs] = useState(
+    DEFAULT_SLIDESHOW_INTERVAL_MS
+  );
   const [transitionEffect, setTransitionEffect] =
     useState<TransitionEffect>("slide");
   const prefersReducedMotion = useReducedMotion();
@@ -216,8 +216,8 @@ export function FotoPage() {
   }, [configOpen, closeConfig, openConfig]);
 
   const slideVariants = useMemo(
-    () => getSlideVariants(transitionEffect, prefersReducedMotion),
-    [transitionEffect, prefersReducedMotion]
+    () => getSlideVariants(transitionEffect),
+    [transitionEffect]
   );
 
   const fetchImages = useCallback(async () => {
@@ -323,9 +323,9 @@ export function FotoPage() {
     if (mode !== "slideshow" || images.length === 0) return;
     const id = window.setTimeout(() => {
       advanceRef.current(1);
-    }, SLIDESHOW_INTERVAL_MS);
+    }, slideshowIntervalMs);
     return () => window.clearTimeout(id);
-  }, [mode, images.length, slideshowIndex]);
+  }, [mode, images.length, slideshowIndex, slideshowIntervalMs]);
 
   const currentImageIndex =
     orderIndices.length > 0 && orderIndices[slideshowIndex] !== undefined
@@ -640,7 +640,12 @@ export function FotoPage() {
             role="region"
             aria-label="Bildspel"
             aria-live="polite"
-            style={{ backgroundColor: slideshowBg }}
+            style={
+              {
+                backgroundColor: slideshowBg,
+                "--slideshow-kenburns-ms": `${slideshowIntervalMs}ms`,
+              } as CSSProperties
+            }
             onMouseMove={revealControls}
             onTouchStart={revealControls}
           >
@@ -666,7 +671,7 @@ export function FotoPage() {
                   animate="center"
                   exit="exit"
                   transition={{
-                    duration: prefersReducedMotion ? 0.01 : SLIDE_TRANSITION_S,
+                    duration: SLIDE_TRANSITION_S,
                     ease: [0.22, 1, 0.36, 1],
                   }}
                 >
@@ -674,7 +679,7 @@ export function FotoPage() {
                     src={currentImage?.url}
                     alt=""
                     className={`foto-slideshow__image${
-                      prefersReducedMotion || transitionEffect === "flip"
+                      transitionEffect === "flip"
                         ? ""
                         : " foto-slideshow__image--kenburns"
                     }`}
@@ -732,6 +737,43 @@ export function FotoPage() {
                       }}
                       style={{ transformOrigin: "top left" }}
                     >
+                      <div className="foto-slideshow__config-section">
+                        <p className="foto-slideshow__config-label">Bytestid</p>
+                        <div className="foto-slideshow__speed">
+                          <div className="foto-slideshow__speed-header">
+                            <span className="foto-slideshow__speed-hint">Snabb</span>
+                            <span
+                              className="foto-slideshow__speed-value"
+                              aria-live="polite"
+                            >
+                              {formatIntervalSeconds(slideshowIntervalMs)}
+                            </span>
+                            <span className="foto-slideshow__speed-hint">Långsam</span>
+                          </div>
+                          <label className="foto-slideshow__speed-slider">
+                            <span className="visually-hidden">
+                              Tid mellan bildbyten
+                            </span>
+                            <input
+                              type="range"
+                              min={SLIDESHOW_INTERVAL_MIN_MS}
+                              max={SLIDESHOW_INTERVAL_MAX_MS}
+                              step={SLIDESHOW_INTERVAL_STEP_MS}
+                              value={slideshowIntervalMs}
+                              onChange={(e) =>
+                                setSlideshowIntervalMs(Number(e.target.value))
+                              }
+                              aria-valuemin={SLIDESHOW_INTERVAL_MIN_MS / 1000}
+                              aria-valuemax={SLIDESHOW_INTERVAL_MAX_MS / 1000}
+                              aria-valuenow={slideshowIntervalMs / 1000}
+                              aria-valuetext={formatIntervalSeconds(
+                                slideshowIntervalMs
+                              )}
+                            />
+                          </label>
+                        </div>
+                      </div>
+
                       <div className="foto-slideshow__config-section">
                         <p className="foto-slideshow__config-label">Ordning</p>
                         <button
