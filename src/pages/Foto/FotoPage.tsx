@@ -6,7 +6,11 @@ import {
   useReducedMotion,
   type Variants,
 } from "framer-motion";
-import { supabase, WEDDING_PHOTOS_BUCKET } from "../../lib/supabase";
+import {
+  supabase,
+  WEDDING_PHOTOS_BUCKET,
+  isWeddingPhotoFile,
+} from "../../lib/supabase";
 import "./FotoPage.scss";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
@@ -232,7 +236,8 @@ export function FotoPage() {
       return;
     }
     setGalleryError(null);
-    const files = (data ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder");
+    // Listar bara root – gömda bilder ligger i hidden/ och syns inte här.
+    const files = (data ?? []).filter(isWeddingPhotoFile);
     const urls = await Promise.all(
       files.map(async (f) => {
         const { data: urlData } = client.storage

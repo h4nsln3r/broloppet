@@ -15,3 +15,14 @@ export const supabase =
     : null;
 
 export const WEDDING_PHOTOS_BUCKET = "wedding-photos";
+
+/** Gömda bilder ligger i den här mappen och visas inte publikt. */
+export const WEDDING_PHOTOS_HIDDEN_FOLDER = "hidden";
+
+/** Filtrerar bort mappar och Storage-placeholders från list()-resultat. */
+export function isWeddingPhotoFile(file: {
+  name: string;
+  id: string | null;
+}): boolean {
+  return file.name !== ".emptyFolderPlaceholder" && file.id !== null;
+}

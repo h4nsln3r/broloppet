@@ -68,6 +68,66 @@
   font-size: 0.95rem;
 }
 
+.foto-admin__section {
+  margin-bottom: 8px;
+}
+
+.foto-admin__section--hidden {
+  margin-top: 28px;
+  padding: 20px 16px 16px;
+  border-top: 1px solid rgba(154, 143, 130, 0.35);
+  border-radius: 0 0 $radius-sm $radius-sm;
+  background: rgba(44, 37, 32, 0.05);
+}
+
+.foto-admin__heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 0 4px;
+  font-family: $font-heading;
+  font-size: 1.35rem;
+  font-weight: 500;
+  text-align: center;
+  color: var(--text);
+}
+
+.foto-admin__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(44, 37, 32, 0.12);
+  font-family: $font-body;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.foto-admin__section--hidden .foto-admin__count {
+  background: rgba(44, 37, 32, 0.22);
+  color: #fff;
+}
+
+.foto-admin__section-hint {
+  margin: 0 0 16px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.foto-admin__empty {
+  margin: 0;
+  padding: 20px 12px;
+  text-align: center;
+  font-size: 0.9rem;
+  border: 1px dashed rgba(154, 143, 130, 0.4);
+  border-radius: $radius-sm;
+}
+
 .foto-admin__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -86,30 +146,74 @@
     object-fit: cover;
     display: block;
   }
+
+  &--hidden img {
+    filter: saturate(0.55) brightness(0.88);
+  }
 }
 
-.foto-admin__delete {
+.foto-admin__badge {
   position: absolute;
+  top: 8px;
   left: 8px;
-  right: 8px;
-  bottom: 8px;
-  padding: 8px 10px;
-  border: none;
+  padding: 3px 8px;
   border-radius: $radius-sm;
-  background: rgba(44, 37, 32, 0.88);
+  background: rgba(44, 37, 32, 0.78);
   color: #fff;
   font-family: $font-body;
-  font-size: 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.foto-admin__actions {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  display: flex;
+  gap: 4px;
+}
+
+.foto-admin__action {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 6px;
+  border: none;
+  border-radius: $radius-sm;
+  color: #fff;
+  font-family: $font-body;
+  font-size: 0.78rem;
   font-weight: 500;
   cursor: pointer;
   transition: background var(--transition-fast);
 
-  &:hover:not(:disabled) {
-    background: #8b3a2a;
-  }
-
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+  }
+
+  &--hide {
+    background: rgba(44, 37, 32, 0.82);
+
+    &:hover:not(:disabled) {
+      background: rgba(44, 37, 32, 0.95);
+    }
+  }
+
+  &--show {
+    background: rgba(74, 98, 72, 0.9);
+
+    &:hover:not(:disabled) {
+      background: rgba(58, 82, 56, 0.95);
+    }
+  }
+
+  &--delete {
+    background: rgba(44, 37, 32, 0.72);
+
+    &:hover:not(:disabled) {
+      background: #8b3a2a;
+    }
   }
 }
