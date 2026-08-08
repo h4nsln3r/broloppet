@@ -26,10 +26,35 @@ const SLIDESHOW_INTERVAL_STEP_MS = 1000;
 const SLIDE_TRANSITION_S = 0.7;
 const CONTROLS_IDLE_MS = 2500;
 const DEFAULT_SLIDESHOW_BG = "#14110f";
+/** Hur ofta galleri/bildspel kollar efter nya uppladdningar. */
+const IMAGE_POLL_INTERVAL_MS = 12_000;
+
+type GalleryImage = { name: string; url: string };
 
 function formatIntervalSeconds(ms: number): string {
   const seconds = Math.round(ms / 1000);
   return seconds === 1 ? "1 sekund" : `${seconds} sekunder`;
+}
+
+/** Äldst → nyast (created_at, annars timestamp-prefix i filnamnet). */
+function sortPhotosByTime<T extends { name: string; created_at?: string | null }>(
+  files: T[]
+): T[] {
+  return [...files].sort((a, b) => {
+    const aTime = a.created_at ?? "";
+    const bTime = b.created_at ?? "";
+    if (aTime && bTime && aTime !== bTime) {
+      return aTime.localeCompare(bTime);
+    }
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function sameImageList(a: GalleryImage[], b: GalleryImage[]): boolean {
+  return (
+    a.length === b.length &&
+    a.every((img, i) => img.name === b[i]?.name && img.url === b[i]?.url)
+  );
 }
 
 const EFFECT_OPTIONS: { id: TransitionEffect; label: string }[] = [
@@ -61,6 +86,25 @@ function reshuffle(count: number, avoidFirst?: number): number[] {
 
 function sequentialOrder(count: number): number[] {
   return Array.from({ length: count }, (_, i) => i);
+}
+
+/** Lägger in `toInsert` direkt efter aktuell bild i spelets kö. */
+function insertAfterCurrent(
+  order: number[],
+  currentPos: number,
+  toInsert: number[]
+): number[] {
+  if (toInsert.length === 0) return order;
+  const insertSet = new Set(toInsert);
+  const without = order.filter((idx) => !insertSet.has(idx));
+  const currentImgIdx = order[currentPos];
+  const at = currentImgIdx !== undefined ? without.indexOf(currentImgIdx) : -1;
+  const insertAt = at >= 0 ? at + 1 : 0;
+  return [
+    ...without.slice(0, insertAt),
+    ...toInsert,
+    ...without.slice(insertAt),
+  ];
 }
 
 function getSlideVariants(effect: TransitionEffect): Variants {
@@ -157,11 +201,12 @@ export function FotoPage() {
   const [error, setError] = useState<string | null>(null);
   const [failedUploads, setFailedUploads] = useState<FailedUpload[]>([]);
   const [successCount, setSuccessCount] = useState(0);
-  const [images, setImages] = useState<{ name: string; url: string }[]>([]);
+  const [images, setImages] = useState<GalleryImage[]>([]);
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const [mode, setMode] = useState<ViewMode>("upload");
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [randomOrder, setRandomOrder] = useState(false);
+  const [preferNewImages, setPreferNewImages] = useState(false);
   const [orderIndices, setOrderIndices] = useState<number[]>([]);
   const [slideDirection, setSlideDirection] = useState<SlideDirection>(1);
   const [configOpen, setConfigOpen] = useState(false);
@@ -176,6 +221,11 @@ export function FotoPage() {
   const advanceRef = useRef<(dir: SlideDirection) => void>(() => {});
   const idleTimerRef = useRef<number | null>(null);
   const configOpenRef = useRef(false);
+  const randomOrderRef = useRef(false);
+  const preferNewImagesRef = useRef(false);
+  const currentImageNameRef = useRef<string | null>(null);
+  const prevSlideshowImagesRef = useRef<GalleryImage[]>([]);
+  const slideshowActiveRef = useRef(false);
 
   const chromeVisible = controlsVisible || configOpen;
 
@@ -229,7 +279,10 @@ export function FotoPage() {
     if (!client) return;
     const { data, error } = await client.storage
       .from(WEDDING_PHOTOS_BUCKET)
-      .list("", { limit: 200 });
+      .list("", {
+        limit: 200,
+        sortBy: { column: "created_at", order: "asc" },
+      });
     if (error) {
       console.error(error);
       setGalleryError(describeUploadError(error.message));
@@ -237,23 +290,37 @@ export function FotoPage() {
     }
     setGalleryError(null);
     // Listar bara root – gömda bilder ligger i hidden/ och syns inte här.
-    const files = (data ?? []).filter(isWeddingPhotoFile);
-    const urls = await Promise.all(
-      files.map(async (f) => {
-        const { data: urlData } = client.storage
-          .from(WEDDING_PHOTOS_BUCKET)
-          .getPublicUrl(f.name);
-        return { name: f.name, url: urlData.publicUrl };
-      })
-    );
-    setImages(urls);
+    const files = sortPhotosByTime((data ?? []).filter(isWeddingPhotoFile));
+    const urls: GalleryImage[] = files.map((f) => {
+      const { data: urlData } = client.storage
+        .from(WEDDING_PHOTOS_BUCKET)
+        .getPublicUrl(f.name);
+      return { name: f.name, url: urlData.publicUrl };
+    });
+    setImages((prev) => (sameImageList(prev, urls) ? prev : urls));
   }, []);
 
   useEffect(() => {
     // Hämtar bilder vid mount; setState sker asynkront efter nätverksanropet.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchImages();
   }, [fetchImages]);
+
+  /** Under galleri/bildspel: hämta nya uppladdningar med jämna mellanrum. */
+  useEffect(() => {
+    if (mode !== "gallery" && mode !== "slideshow") return;
+    const id = window.setInterval(() => {
+      void fetchImages();
+    }, IMAGE_POLL_INTERVAL_MS);
+    return () => window.clearInterval(id);
+  }, [mode, fetchImages]);
+
+  useEffect(() => {
+    randomOrderRef.current = randomOrder;
+  }, [randomOrder]);
+
+  useEffect(() => {
+    preferNewImagesRef.current = preferNewImages;
+  }, [preferNewImages]);
 
   const startSlideshow = useCallback(() => {
     setMode("slideshow");
@@ -267,20 +334,101 @@ export function FotoPage() {
     document.documentElement.requestFullscreen?.().catch(() => {});
   }, [images.length, scheduleHideControls]);
 
-  /** Bygger om ordningen om bildlistan ändras under bildspelet. */
+  /**
+   * När bildlistan ändras under bildspelet: behåll aktuell bild.
+   * Utan "nya först": tidsordning (nya sist) eller slump (nya sist i kön).
+   * Med "nya först": nya bilder köas direkt efter den som visas nu.
+   */
   useEffect(() => {
-    if (mode !== "slideshow") return;
+    if (mode !== "slideshow") {
+      slideshowActiveRef.current = false;
+      prevSlideshowImagesRef.current = images;
+      return;
+    }
+
+    const justStarted = !slideshowActiveRef.current;
+    slideshowActiveRef.current = true;
+
+    if (justStarted) {
+      prevSlideshowImagesRef.current = images;
+      return;
+    }
+
     const n = images.length;
-    if (n === 0) return;
-    // Synkar spelets indexordning mot galleriet – medvetet state-sync.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setOrderIndices((prev) => {
-      const valid = prev.length === n && prev.every((idx) => idx >= 0 && idx < n);
-      if (valid) return prev;
-      return randomOrder ? reshuffle(n) : sequentialOrder(n);
+    if (n === 0) {
+      setOrderIndices([]);
+      setSlideshowIndex(0);
+      prevSlideshowImagesRef.current = images;
+      return;
+    }
+
+    const stayOn = currentImageNameRef.current;
+    const prevImages = prevSlideshowImagesRef.current;
+    const preferNew = preferNewImagesRef.current;
+    const random = randomOrderRef.current;
+
+    // Ren tidsordning utan prioritet – alltid äldst → nyast.
+    if (!random && !preferNew) {
+      setOrderIndices(sequentialOrder(n));
+      const idx = stayOn
+        ? images.findIndex((img) => img.name === stayOn)
+        : 0;
+      setSlideshowIndex(idx >= 0 ? idx : 0);
+      prevSlideshowImagesRef.current = images;
+      return;
+    }
+
+    const nameToIdx = new Map(images.map((img, i) => [img.name, i]));
+
+    setOrderIndices((prevOrder) => {
+      const remapped = prevOrder
+        .map((oldIdx) => {
+          const name = prevImages[oldIdx]?.name;
+          return name !== undefined ? nameToIdx.get(name) : undefined;
+        })
+        .filter((i): i is number => i !== undefined);
+
+      const present = new Set(remapped);
+      let newcomers = images
+        .map((_, i) => i)
+        .filter((i) => !present.has(i));
+
+      if (preferNew) {
+        // Nyast först bland de som just kommit in.
+        newcomers = [...newcomers].sort((a, b) =>
+          images[b].name.localeCompare(images[a].name)
+        );
+      } else if (random) {
+        newcomers = shuffle(newcomers);
+      }
+
+      let next: number[];
+      if (remapped.length === 0) {
+        next = random ? reshuffle(n) : sequentialOrder(n);
+      } else if (newcomers.length === 0) {
+        next = remapped;
+      } else if (preferNew) {
+        const stayPos = stayOn
+          ? remapped.findIndex((imgIdx) => images[imgIdx]?.name === stayOn)
+          : 0;
+        next = insertAfterCurrent(
+          remapped,
+          stayPos >= 0 ? stayPos : 0,
+          newcomers
+        );
+      } else {
+        next = [...remapped, ...newcomers];
+      }
+
+      const pos = stayOn
+        ? next.findIndex((imgIdx) => images[imgIdx]?.name === stayOn)
+        : 0;
+      setSlideshowIndex(pos >= 0 ? pos : 0);
+      return next;
     });
-    setSlideshowIndex((i) => (i >= n ? Math.max(0, n - 1) : i));
-  }, [images.length, mode, randomOrder]);
+
+    prevSlideshowImagesRef.current = images;
+  }, [images, mode]);
 
   const advance = useCallback(
     (dir: SlideDirection) => {
@@ -338,6 +486,10 @@ export function FotoPage() {
       : slideshowIndex;
   const currentImage = images[currentImageIndex];
 
+  useEffect(() => {
+    currentImageNameRef.current = currentImage?.name ?? null;
+  }, [currentImage?.name]);
+
   const nextImageIndex =
     orderIndices.length > 0
       ? orderIndices[(slideshowIndex + 1) % orderIndices.length]
@@ -352,8 +504,14 @@ export function FotoPage() {
 
     if (randomOrder) {
       setRandomOrder(false);
-      setOrderIndices(sequentialOrder(n));
-      setSlideshowIndex(Math.min(currentRealIndex, n - 1));
+      if (!preferNewImages) {
+        setOrderIndices(sequentialOrder(n));
+        setSlideshowIndex(Math.min(currentRealIndex, n - 1));
+      } else {
+        // Behåll kön men stanna på samma bild.
+        const pos = orderIndices.findIndex((idx) => idx === currentRealIndex);
+        setSlideshowIndex(pos >= 0 ? pos : 0);
+      }
       return;
     }
 
@@ -361,7 +519,23 @@ export function FotoPage() {
     setOrderIndices([currentRealIndex, ...shuffle(rest)]);
     setSlideshowIndex(0);
     setRandomOrder(true);
-  }, [images.length, orderIndices, slideshowIndex, randomOrder]);
+  }, [images.length, orderIndices, slideshowIndex, randomOrder, preferNewImages]);
+
+  const togglePreferNewImages = useCallback(() => {
+    const n = images.length;
+    if (n === 0) return;
+
+    const currentRealIndex = orderIndices[slideshowIndex] ?? slideshowIndex;
+
+    setPreferNewImages((on) => {
+      const next = !on;
+      if (!next && !randomOrderRef.current) {
+        setOrderIndices(sequentialOrder(n));
+        setSlideshowIndex(Math.min(currentRealIndex, n - 1));
+      }
+      return next;
+    });
+  }, [images.length, orderIndices, slideshowIndex]);
 
   const exitSlideshow = useCallback(() => {
     clearIdleTimer();
@@ -781,18 +955,35 @@ export function FotoPage() {
 
                       <div className="foto-slideshow__config-section">
                         <p className="foto-slideshow__config-label">Ordning</p>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={randomOrder}
-                          className={`foto-slideshow__switch${randomOrder ? " is-on" : ""}`}
-                          onClick={toggleRandom}
-                        >
-                          <span className="foto-slideshow__switch-track">
-                            <span className="foto-slideshow__switch-thumb" />
-                          </span>
-                          <span>Slumpa bilder</span>
-                        </button>
+                        <div className="foto-slideshow__switches">
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={randomOrder}
+                            className={`foto-slideshow__switch${randomOrder ? " is-on" : ""}`}
+                            onClick={toggleRandom}
+                          >
+                            <span className="foto-slideshow__switch-track">
+                              <span className="foto-slideshow__switch-thumb" />
+                            </span>
+                            <span>Slumpa bilder</span>
+                          </button>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={preferNewImages}
+                            className={`foto-slideshow__switch${preferNewImages ? " is-on" : ""}`}
+                            onClick={togglePreferNewImages}
+                          >
+                            <span className="foto-slideshow__switch-track">
+                              <span className="foto-slideshow__switch-thumb" />
+                            </span>
+                            <span>Visa nya bilder först</span>
+                          </button>
+                          <p className="foto-slideshow__switch-hint">
+                            Uppladdningar under spelet visas härnäst
+                          </p>
+                        </div>
                       </div>
 
                       <div className="foto-slideshow__config-section">

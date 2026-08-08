@@ -560,6 +560,19 @@
     }
   }
 
+  .foto-slideshow__switches {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .foto-slideshow__switch-hint {
+    margin: 2px 0 0 46px;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.42);
+  }
+
   .foto-slideshow__switch {
     display: flex;
     align-items: center;
