@@ -139,6 +139,8 @@
   aspect-ratio: 1;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.04);
+  box-shadow: inset 0 0 0 2px
+    color-mix(in srgb, var(--table-color, transparent) 50%, transparent);
 
   img {
     width: 100%;
@@ -164,6 +166,21 @@
   font-size: 0.72rem;
   font-weight: 500;
   letter-spacing: 0.02em;
+}
+
+.foto-admin__table-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  border-radius: $radius-full;
+  background: var(--table-color, rgba(44, 37, 32, 0.82));
+  color: #fff;
+  font-family: $font-body;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
 .foto-admin__actions {

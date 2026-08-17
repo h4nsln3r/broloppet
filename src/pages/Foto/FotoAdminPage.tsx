@@ -1,16 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import type { Session } from "@supabase/supabase-js";
+import { tableColor } from "../../config/photoTables";
+import { supabase, WEDDING_PHOTOS_BUCKET } from "../../lib/supabase";
 import {
-  supabase,
-  WEDDING_PHOTOS_BUCKET,
-  WEDDING_PHOTOS_HIDDEN_FOLDER,
-  isWeddingPhotoFile,
-} from "../../lib/supabase";
+  fetchAdminWeddingPhotos,
+  hiddenPhotoPath,
+  visiblePhotoPathFromHidden,
+  type WeddingPhoto,
+} from "../../lib/weddingPhotos";
 import "./FotoPage.scss";
 import "./FotoAdminPage.scss";
 
-type GalleryImage = { name: string; url: string; path: string };
 type BusyAction = "hide" | "show" | "delete";
 
 function describeAuthError(raw: string): string {
@@ -36,17 +37,6 @@ function describeAuthError(raw: string): string {
     return "En fil med samma namn finns redan på målplatsen.";
   }
   return raw || "Okänt fel.";
-}
-
-function listToImages(
-  files: { name: string; id: string | null }[],
-  folder: string | null,
-  getPublicUrl: (path: string) => string
-): GalleryImage[] {
-  return files.filter(isWeddingPhotoFile).map((f) => {
-    const path = folder ? `${folder}/${f.name}` : f.name;
-    return { name: f.name, path, url: getPublicUrl(path) };
-  });
 }
 
 /**
@@ -98,8 +88,8 @@ export function FotoAdminPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loggingIn, setLoggingIn] = useState(false);
 
-  const [visibleImages, setVisibleImages] = useState<GalleryImage[]>([]);
-  const [hiddenImages, setHiddenImages] = useState<GalleryImage[]>([]);
+  const [visibleImages, setVisibleImages] = useState<WeddingPhoto[]>([]);
+  const [hiddenImages, setHiddenImages] = useState<WeddingPhoto[]>([]);
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [busyPath, setBusyPath] = useState<string | null>(null);
@@ -129,41 +119,18 @@ export function FotoAdminPage() {
   }, []);
 
   const fetchImages = useCallback(async () => {
-    const client = supabase;
-    if (!client) return;
     setGalleryLoading(true);
     setGalleryError(null);
 
-    const getPublicUrl = (path: string) =>
-      client.storage.from(WEDDING_PHOTOS_BUCKET).getPublicUrl(path).data
-        .publicUrl;
-
-    const [visibleRes, hiddenRes] = await Promise.all([
-      client.storage.from(WEDDING_PHOTOS_BUCKET).list("", { limit: 200 }),
-      client.storage
-        .from(WEDDING_PHOTOS_BUCKET)
-        .list(WEDDING_PHOTOS_HIDDEN_FOLDER, { limit: 200 }),
-    ]);
-
-    if (visibleRes.error) {
-      setGalleryError(describeAuthError(visibleRes.error.message));
-      setGalleryLoading(false);
-      return;
-    }
-    if (hiddenRes.error) {
-      setGalleryError(describeAuthError(hiddenRes.error.message));
+    const { visible, hidden, error } = await fetchAdminWeddingPhotos();
+    if (error) {
+      setGalleryError(describeAuthError(error));
       setGalleryLoading(false);
       return;
     }
 
-    setVisibleImages(listToImages(visibleRes.data ?? [], null, getPublicUrl));
-    setHiddenImages(
-      listToImages(
-        hiddenRes.data ?? [],
-        WEDDING_PHOTOS_HIDDEN_FOLDER,
-        getPublicUrl
-      )
-    );
+    setVisibleImages(visible);
+    setHiddenImages(hidden);
     setGalleryLoading(false);
   }, []);
 
@@ -199,7 +166,7 @@ export function FotoAdminPage() {
     setActionMessage(null);
   }, []);
 
-  const handleHide = useCallback(async (img: GalleryImage) => {
+  const handleHide = useCallback(async (img: WeddingPhoto) => {
     const client = supabase;
     if (!client) return;
 
@@ -207,7 +174,7 @@ export function FotoAdminPage() {
     setBusyAction("hide");
     setActionMessage(null);
 
-    const dest = `${WEDDING_PHOTOS_HIDDEN_FOLDER}/${img.name}`;
+    const dest = hiddenPhotoPath(img.path);
     const errorMessage = await relocatePhoto(img.path, dest);
 
     setBusyPath(null);
@@ -224,12 +191,12 @@ export function FotoAdminPage() {
     setVisibleImages((prev) => prev.filter((i) => i.path !== img.path));
     setHiddenImages((prev) => [
       ...prev,
-      { name: img.name, path: dest, url: hiddenUrl },
+      { ...img, path: dest, url: hiddenUrl },
     ]);
     setActionMessage("Bilden är gömd – sparad men visas inte publikt.");
   }, []);
 
-  const handleUnhide = useCallback(async (img: GalleryImage) => {
+  const handleUnhide = useCallback(async (img: WeddingPhoto) => {
     const client = supabase;
     if (!client) return;
 
@@ -237,7 +204,7 @@ export function FotoAdminPage() {
     setBusyAction("show");
     setActionMessage(null);
 
-    const dest = img.name;
+    const dest = visiblePhotoPathFromHidden(img.path);
     const errorMessage = await relocatePhoto(img.path, dest);
 
     setBusyPath(null);
@@ -254,12 +221,12 @@ export function FotoAdminPage() {
     setHiddenImages((prev) => prev.filter((i) => i.path !== img.path));
     setVisibleImages((prev) => [
       ...prev,
-      { name: img.name, path: dest, url: visibleUrl },
+      { ...img, path: dest, url: visibleUrl },
     ]);
     setActionMessage("Bilden visas igen i galleri och bildspel.");
   }, []);
 
-  const handleDelete = useCallback(async (img: GalleryImage) => {
+  const handleDelete = useCallback(async (img: WeddingPhoto) => {
     const client = supabase;
     if (!client) return;
     const ok = window.confirm(
@@ -383,8 +350,8 @@ export function FotoAdminPage() {
         </Link>
         <h1>Foto – admin</h1>
         <p className="foto-page__intro muted">
-          Inloggad som {session.user.email}. Göm bilder som inte ska synas
-          publikt (de sparas kvar), eller radera dem helt.
+          Inloggad som {session.user.email}. Alla bord visas här. Göm bilder
+          som inte ska synas publikt (de sparas kvar), eller radera dem helt.
         </p>
 
         <div className="foto-admin__toolbar">
@@ -431,7 +398,7 @@ export function FotoAdminPage() {
                 </span>
               </h2>
               <p className="foto-admin__section-hint muted">
-                Visas i galleri och bildspel.
+                Visas i galleri och bildspel. Bordet visas på varje bild.
               </p>
               {visibleImages.length === 0 ? (
                 <p className="foto-admin__empty muted">
@@ -441,9 +408,26 @@ export function FotoAdminPage() {
                 <div className="foto-admin__grid">
                   {visibleImages.map((img) => {
                     const busy = busyPath === img.path;
+                    const color = tableColor(img.table);
                     return (
-                      <div key={img.path} className="foto-admin__item">
+                      <div
+                        key={img.path}
+                        className="foto-admin__item"
+                        style={
+                          color
+                            ? ({ "--table-color": color } as CSSProperties)
+                            : undefined
+                        }
+                      >
                         <img src={img.url} alt="" loading="lazy" />
+                        {img.table !== null && (
+                          <span
+                            className="foto-admin__table-badge"
+                            aria-label={`Bord ${img.table}`}
+                          >
+                            Bord {img.table}
+                          </span>
+                        )}
                         <div className="foto-admin__actions">
                           <button
                             type="button"
@@ -495,13 +479,28 @@ export function FotoAdminPage() {
                 <div className="foto-admin__grid">
                   {hiddenImages.map((img) => {
                     const busy = busyPath === img.path;
+                    const color = tableColor(img.table);
                     return (
                       <div
                         key={img.path}
                         className="foto-admin__item foto-admin__item--hidden"
+                        style={
+                          color
+                            ? ({ "--table-color": color } as CSSProperties)
+                            : undefined
+                        }
                       >
                         <img src={img.url} alt="" loading="lazy" />
-                        <span className="foto-admin__badge">Gömd</span>
+                        {img.table !== null ? (
+                          <span
+                            className="foto-admin__table-badge"
+                            aria-label={`Bord ${img.table}`}
+                          >
+                            Bord {img.table}
+                          </span>
+                        ) : (
+                          <span className="foto-admin__badge">Gömd</span>
+                        )}
                         <div className="foto-admin__actions">
                           <button
                             type="button"

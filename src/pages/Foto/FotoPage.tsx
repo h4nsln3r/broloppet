@@ -7,10 +7,21 @@ import {
   type Variants,
 } from "framer-motion";
 import {
-  supabase,
-  WEDDING_PHOTOS_BUCKET,
-  isWeddingPhotoFile,
-} from "../../lib/supabase";
+  PHOTO_TABLE_NUMBERS,
+  readStoredGalleryFilter,
+  readStoredPhotoTable,
+  tableColor,
+  writeStoredGalleryFilter,
+  writeStoredPhotoTable,
+  type PhotoGalleryFilter,
+  type PhotoTableNumber,
+} from "../../config/photoTables";
+import { supabase, WEDDING_PHOTOS_BUCKET } from "../../lib/supabase";
+import {
+  fetchPublicWeddingPhotos,
+  photoUploadPath,
+  type WeddingPhoto,
+} from "../../lib/weddingPhotos";
 import "./FotoPage.scss";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
@@ -29,31 +40,20 @@ const DEFAULT_SLIDESHOW_BG = "#14110f";
 /** Hur ofta galleri/bildspel kollar efter nya uppladdningar. */
 const IMAGE_POLL_INTERVAL_MS = 12_000;
 
-type GalleryImage = { name: string; url: string };
-
 function formatIntervalSeconds(ms: number): string {
   const seconds = Math.round(ms / 1000);
   return seconds === 1 ? "1 sekund" : `${seconds} sekunder`;
 }
 
-/** Äldst → nyast (created_at, annars timestamp-prefix i filnamnet). */
-function sortPhotosByTime<T extends { name: string; created_at?: string | null }>(
-  files: T[]
-): T[] {
-  return [...files].sort((a, b) => {
-    const aTime = a.created_at ?? "";
-    const bTime = b.created_at ?? "";
-    if (aTime && bTime && aTime !== bTime) {
-      return aTime.localeCompare(bTime);
-    }
-    return a.name.localeCompare(b.name);
-  });
-}
-
-function sameImageList(a: GalleryImage[], b: GalleryImage[]): boolean {
+function sameImageList(a: WeddingPhoto[], b: WeddingPhoto[]): boolean {
   return (
     a.length === b.length &&
-    a.every((img, i) => img.name === b[i]?.name && img.url === b[i]?.url)
+    a.every(
+      (img, i) =>
+        img.path === b[i]?.path &&
+        img.url === b[i]?.url &&
+        img.table === b[i]?.table
+    )
   );
 }
 
@@ -201,9 +201,16 @@ export function FotoPage() {
   const [error, setError] = useState<string | null>(null);
   const [failedUploads, setFailedUploads] = useState<FailedUpload[]>([]);
   const [successCount, setSuccessCount] = useState(0);
-  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [allImages, setAllImages] = useState<WeddingPhoto[]>([]);
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const [mode, setMode] = useState<ViewMode>("upload");
+  const [selectedTable, setSelectedTable] = useState<PhotoTableNumber | null>(
+    () => readStoredPhotoTable()
+  );
+  const [galleryFilter, setGalleryFilter] = useState<PhotoGalleryFilter>(() =>
+    readStoredGalleryFilter()
+  );
+  const [tableMenuOpen, setTableMenuOpen] = useState(false);
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [randomOrder, setRandomOrder] = useState(false);
   const [preferNewImages, setPreferNewImages] = useState(false);
@@ -224,8 +231,27 @@ export function FotoPage() {
   const randomOrderRef = useRef(false);
   const preferNewImagesRef = useRef(false);
   const currentImageNameRef = useRef<string | null>(null);
-  const prevSlideshowImagesRef = useRef<GalleryImage[]>([]);
+  const prevSlideshowImagesRef = useRef<WeddingPhoto[]>([]);
   const slideshowActiveRef = useRef(false);
+  const tableMenuRef = useRef<HTMLDivElement>(null);
+
+  const images = useMemo(() => {
+    if (galleryFilter === "mine" && selectedTable !== null) {
+      return allImages.filter((img) => img.table === selectedTable);
+    }
+    return allImages;
+  }, [allImages, galleryFilter, selectedTable]);
+
+  const selectTable = useCallback((table: PhotoTableNumber) => {
+    writeStoredPhotoTable(table);
+    setSelectedTable(table);
+    setTableMenuOpen(false);
+  }, []);
+
+  const setFilter = useCallback((filter: PhotoGalleryFilter) => {
+    writeStoredGalleryFilter(filter);
+    setGalleryFilter(filter);
+  }, []);
 
   const chromeVisible = controlsVisible || configOpen;
 
@@ -275,33 +301,37 @@ export function FotoPage() {
   );
 
   const fetchImages = useCallback(async () => {
-    const client = supabase;
-    if (!client) return;
-    const { data, error } = await client.storage
-      .from(WEDDING_PHOTOS_BUCKET)
-      .list("", {
-        limit: 200,
-        sortBy: { column: "created_at", order: "asc" },
-      });
+    const { photos, error } = await fetchPublicWeddingPhotos();
     if (error) {
       console.error(error);
-      setGalleryError(describeUploadError(error.message));
+      setGalleryError(describeUploadError(error));
       return;
     }
     setGalleryError(null);
-    // Listar bara root – gömda bilder ligger i hidden/ och syns inte här.
-    const files = sortPhotosByTime((data ?? []).filter(isWeddingPhotoFile));
-    const urls: GalleryImage[] = files.map((f) => {
-      const { data: urlData } = client.storage
-        .from(WEDDING_PHOTOS_BUCKET)
-        .getPublicUrl(f.name);
-      return { name: f.name, url: urlData.publicUrl };
-    });
-    setImages((prev) => (sameImageList(prev, urls) ? prev : urls));
+    setAllImages((prev) => (sameImageList(prev, photos) ? prev : photos));
   }, []);
 
   useEffect(() => {
+    if (!tableMenuOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!tableMenuRef.current?.contains(e.target as Node)) {
+        setTableMenuOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setTableMenuOpen(false);
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [tableMenuOpen]);
+
+  useEffect(() => {
     // Hämtar bilder vid mount; setState sker asynkront efter nätverksanropet.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchImages();
   }, [fetchImages]);
 
@@ -356,6 +386,7 @@ export function FotoPage() {
 
     const n = images.length;
     if (n === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- synka kö med bildlista
       setOrderIndices([]);
       setSlideshowIndex(0);
       prevSlideshowImagesRef.current = images;
@@ -371,20 +402,20 @@ export function FotoPage() {
     if (!random && !preferNew) {
       setOrderIndices(sequentialOrder(n));
       const idx = stayOn
-        ? images.findIndex((img) => img.name === stayOn)
+        ? images.findIndex((img) => img.path === stayOn)
         : 0;
       setSlideshowIndex(idx >= 0 ? idx : 0);
       prevSlideshowImagesRef.current = images;
       return;
     }
 
-    const nameToIdx = new Map(images.map((img, i) => [img.name, i]));
+    const nameToIdx = new Map(images.map((img, i) => [img.path, i]));
 
     setOrderIndices((prevOrder) => {
       const remapped = prevOrder
         .map((oldIdx) => {
-          const name = prevImages[oldIdx]?.name;
-          return name !== undefined ? nameToIdx.get(name) : undefined;
+          const path = prevImages[oldIdx]?.path;
+          return path !== undefined ? nameToIdx.get(path) : undefined;
         })
         .filter((i): i is number => i !== undefined);
 
@@ -396,7 +427,7 @@ export function FotoPage() {
       if (preferNew) {
         // Nyast först bland de som just kommit in.
         newcomers = [...newcomers].sort((a, b) =>
-          images[b].name.localeCompare(images[a].name)
+          images[b].path.localeCompare(images[a].path)
         );
       } else if (random) {
         newcomers = shuffle(newcomers);
@@ -409,7 +440,7 @@ export function FotoPage() {
         next = remapped;
       } else if (preferNew) {
         const stayPos = stayOn
-          ? remapped.findIndex((imgIdx) => images[imgIdx]?.name === stayOn)
+          ? remapped.findIndex((imgIdx) => images[imgIdx]?.path === stayOn)
           : 0;
         next = insertAfterCurrent(
           remapped,
@@ -421,7 +452,7 @@ export function FotoPage() {
       }
 
       const pos = stayOn
-        ? next.findIndex((imgIdx) => images[imgIdx]?.name === stayOn)
+        ? next.findIndex((imgIdx) => images[imgIdx]?.path === stayOn)
         : 0;
       setSlideshowIndex(pos >= 0 ? pos : 0);
       return next;
@@ -487,8 +518,8 @@ export function FotoPage() {
   const currentImage = images[currentImageIndex];
 
   useEffect(() => {
-    currentImageNameRef.current = currentImage?.name ?? null;
-  }, [currentImage?.name]);
+    currentImageNameRef.current = currentImage?.path ?? null;
+  }, [currentImage?.path]);
 
   const nextImageIndex =
     orderIndices.length > 0
@@ -606,7 +637,7 @@ export function FotoPage() {
 
   const upload = useCallback(async () => {
     const client = supabase;
-    if (!client || files.length === 0) return;
+    if (!client || files.length === 0 || selectedTable === null) return;
     setStatus("uploading");
     setError(null);
     setFailedUploads([]);
@@ -615,11 +646,12 @@ export function FotoPage() {
     const failed: { file: File; reason: string }[] = [];
 
     for (const file of files) {
-      const name = `${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
+      const path = photoUploadPath(selectedTable, fileName);
       try {
         const { error: uploadError } = await client.storage
           .from(WEDDING_PHOTOS_BUCKET)
-          .upload(name, file, { cacheControl: "3600", upsert: false });
+          .upload(path, file, { cacheControl: "3600", upsert: false });
         // Supabase kastar inte vid fel – felet returneras i `error`.
         if (uploadError) {
           failed.push({ file, reason: describeUploadError(uploadError.message) });
@@ -652,7 +684,7 @@ export function FotoPage() {
             : "Bilden kunde inte laddas upp:"
       );
     }
-  }, [files, fetchImages]);
+  }, [files, fetchImages, selectedTable]);
 
   if (!supabase) {
     return (
@@ -668,6 +700,47 @@ export function FotoPage() {
       </div>
     );
   }
+
+  if (selectedTable === null) {
+    return (
+      <div className="foto-page">
+        <div className="foto-page__card">
+          <Link to="/" className="foto-page__back-corner">
+            ← Tillbaka till bröllopssidan
+          </Link>
+          <h1>Vilket bord sitter du vid?</h1>
+          <p className="foto-page__intro muted">
+            Välj ditt bord så kopplas bilderna du laddar upp till laget. Du kan
+            byta senare.
+          </p>
+          <div
+            className="foto-table-picker"
+            role="group"
+            aria-label="Välj bordsnummer"
+          >
+            {PHOTO_TABLE_NUMBERS.map((table) => (
+              <button
+                key={table}
+                type="button"
+                className="foto-table-picker__btn"
+                style={
+                  {
+                    "--table-color": tableColor(table),
+                  } as CSSProperties
+                }
+                onClick={() => selectTable(table)}
+              >
+                <span className="foto-table-picker__num">{table}</span>
+                <span className="foto-table-picker__label">Bord {table}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedColor = tableColor(selectedTable);
 
   return (
     <div className={`foto-page ${mode === "gallery" ? "foto-page--gallery" : ""}`}>
@@ -710,6 +783,13 @@ export function FotoPage() {
 
         {mode === "upload" && (
           <div className="foto-upload">
+            <p className="foto-upload__table-hint muted tiny">
+              Uppladdningar sparas till{" "}
+              <strong style={{ color: selectedColor ?? undefined }}>
+                Bord {selectedTable}
+              </strong>
+              .
+            </p>
             <div
               className="foto-upload__drop"
               onDrop={handleDrop}
@@ -789,25 +869,51 @@ export function FotoPage() {
 
         {mode === "gallery" && (
           <div className="foto-gallery">
+            {galleryFilter === "mine" && (
+              <p className="foto-gallery__filter-hint muted tiny">
+                Visar bara Bord {selectedTable}
+                {galleryError ? "" : ` · ${images.length} bilder`}
+              </p>
+            )}
             {galleryError ? (
               <p className="foto-upload__error-msg" role="alert">
                 Kunde inte hämta galleriet: {galleryError}
               </p>
             ) : images.length === 0 ? (
-              <p className="muted">Inga bilder ännu.</p>
+              <p className="muted">
+                {galleryFilter === "mine"
+                  ? "Inga bilder från ditt bord ännu."
+                  : "Inga bilder ännu."}
+              </p>
             ) : (
               <div className="foto-gallery__grid">
-                {images.map((img) => (
-                  <a
-                    key={img.name}
-                    href={img.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="foto-gallery__item"
-                  >
-                    <img src={img.url} alt="" loading="lazy" />
-                  </a>
-                ))}
+                {images.map((img) => {
+                  const color = tableColor(img.table);
+                  return (
+                    <a
+                      key={img.path}
+                      href={img.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="foto-gallery__item"
+                      style={
+                        color
+                          ? ({ "--table-color": color } as CSSProperties)
+                          : undefined
+                      }
+                    >
+                      <img src={img.url} alt="" loading="lazy" />
+                      {img.table !== null && (
+                        <span
+                          className="foto-gallery__badge"
+                          aria-label={`Bord ${img.table}`}
+                        >
+                          {img.table}
+                        </span>
+                      )}
+                    </a>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -842,7 +948,7 @@ export function FotoPage() {
             >
               <AnimatePresence initial={false} custom={slideDirection} mode="sync">
                 <motion.div
-                  key={currentImage?.name ?? slideshowIndex}
+                  key={currentImage?.path ?? slideshowIndex}
                   className="foto-slideshow__slide"
                   custom={slideDirection}
                   variants={slideVariants}
@@ -867,6 +973,19 @@ export function FotoPage() {
                 </motion.div>
               </AnimatePresence>
             </div>
+
+            {currentImage?.table !== null && currentImage?.table !== undefined && (
+              <div
+                className="foto-slideshow__table-badge"
+                style={
+                  {
+                    "--table-color": tableColor(currentImage.table),
+                  } as CSSProperties
+                }
+              >
+                Bord {currentImage.table}
+              </div>
+            )}
 
             <div className="foto-slideshow__chrome">
               <div className="foto-slideshow__admin">
@@ -1078,27 +1197,127 @@ export function FotoPage() {
       </div>
 
       {mode !== "slideshow" && (
-        <Link
-          to="/foto/admin"
-          className="foto-page__admin-secret"
-          aria-label="Admin"
-          title="Admin"
-        >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+        <>
+          <div className="foto-table-sticky" ref={tableMenuRef}>
+            <button
+              type="button"
+              className={`foto-table-sticky__chip${tableMenuOpen ? " is-open" : ""}`}
+              style={
+                {
+                  "--table-color": selectedColor,
+                } as CSSProperties
+              }
+              onClick={() => setTableMenuOpen((open) => !open)}
+              aria-expanded={tableMenuOpen}
+              aria-controls="foto-table-menu"
+              aria-label={`Bord ${selectedTable}, öppna meny`}
+            >
+              <span className="foto-table-sticky__num" aria-hidden="true">
+                {selectedTable}
+              </span>
+              <span className="foto-table-sticky__text">Bord {selectedTable}</span>
+            </button>
+
+            <AnimatePresence>
+              {tableMenuOpen && (
+                <motion.div
+                  id="foto-table-menu"
+                  className="foto-table-sticky__menu"
+                  role="dialog"
+                  aria-label="Bordmeny"
+                  initial={
+                    prefersReducedMotion
+                      ? { opacity: 0 }
+                      : { opacity: 0, y: 16, scale: 0.96 }
+                  }
+                  animate={
+                    prefersReducedMotion
+                      ? { opacity: 1 }
+                      : { opacity: 1, y: 0, scale: 1 }
+                  }
+                  exit={
+                    prefersReducedMotion
+                      ? { opacity: 0 }
+                      : { opacity: 0, y: 12, scale: 0.97 }
+                  }
+                  transition={{
+                    duration: prefersReducedMotion ? 0.01 : 0.28,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  <p className="foto-table-sticky__menu-title">Ditt bord</p>
+                  <div
+                    className="foto-table-sticky__filter"
+                    role="group"
+                    aria-label="Filtrera galleri"
+                  >
+                    <button
+                      type="button"
+                      className={galleryFilter === "mine" ? "is-active" : ""}
+                      onClick={() => setFilter("mine")}
+                    >
+                      Bara mitt bord
+                    </button>
+                    <button
+                      type="button"
+                      className={galleryFilter === "all" ? "is-active" : ""}
+                      onClick={() => setFilter("all")}
+                    >
+                      Alla bord
+                    </button>
+                  </div>
+                  <p className="foto-table-sticky__menu-title">Byt bord</p>
+                  <div
+                    className="foto-table-sticky__grid"
+                    role="group"
+                    aria-label="Byt bordsnummer"
+                  >
+                    {PHOTO_TABLE_NUMBERS.map((table) => (
+                      <button
+                        key={table}
+                        type="button"
+                        className={`foto-table-sticky__pick${
+                          table === selectedTable ? " is-selected" : ""
+                        }`}
+                        style={
+                          {
+                            "--table-color": tableColor(table),
+                          } as CSSProperties
+                        }
+                        onClick={() => selectTable(table)}
+                        aria-pressed={table === selectedTable}
+                      >
+                        {table}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <Link
+            to="/foto/admin"
+            className="foto-page__admin-secret"
+            aria-label="Admin"
+            title="Admin"
           >
-            <rect x="5" y="11" width="14" height="10" rx="1" />
-            <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-          </svg>
-        </Link>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="5" y="11" width="14" height="10" rx="1" />
+              <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+            </svg>
+          </Link>
+        </>
       )}
     </div>
   );
