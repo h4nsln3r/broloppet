@@ -7,18 +7,33 @@ import {
   type Variants,
 } from "framer-motion";
 import {
+  PHOTO_COUPLE_COLOR,
+  PHOTO_GUEST_NAME_MAX_LEN,
   PHOTO_TABLE_NUMBERS,
+  identitiesEqual,
+  identityChipMark,
+  identityColor,
+  identityLabel,
   readStoredGalleryFilter,
-  readStoredPhotoTable,
-  tableColor,
+  readStoredGuestName,
+  readStoredNamePromptDone,
+  readStoredPhotoIdentity,
   writeStoredGalleryFilter,
-  writeStoredPhotoTable,
+  writeStoredGuestName,
+  writeStoredNamePromptDone,
+  writeStoredPhotoIdentity,
   type PhotoGalleryFilter,
-  type PhotoTableNumber,
+  type PhotoIdentity,
 } from "../../config/photoTables";
 import { supabase, WEDDING_PHOTOS_BUCKET } from "../../lib/supabase";
 import {
+  buildPhotoFileName,
   fetchPublicWeddingPhotos,
+  normalizeGuestName,
+  photoAttribution,
+  photoMatchesIdentity,
+  photoSourceColor,
+  photoSourceMark,
   photoUploadPath,
   type WeddingPhoto,
 } from "../../lib/weddingPhotos";
@@ -52,7 +67,9 @@ function sameImageList(a: WeddingPhoto[], b: WeddingPhoto[]): boolean {
       (img, i) =>
         img.path === b[i]?.path &&
         img.url === b[i]?.url &&
-        img.table === b[i]?.table
+        img.table === b[i]?.table &&
+        img.fromCouple === b[i]?.fromCouple &&
+        img.guestName === b[i]?.guestName
     )
   );
 }
@@ -204,9 +221,15 @@ export function FotoPage() {
   const [allImages, setAllImages] = useState<WeddingPhoto[]>([]);
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const [mode, setMode] = useState<ViewMode>("upload");
-  const [selectedTable, setSelectedTable] = useState<PhotoTableNumber | null>(
-    () => readStoredPhotoTable()
+  const [selectedIdentity, setSelectedIdentity] =
+    useState<PhotoIdentity | null>(() => readStoredPhotoIdentity());
+  const [guestName, setGuestName] = useState<string | null>(() =>
+    readStoredGuestName()
   );
+  const [namePromptDone, setNamePromptDone] = useState(() =>
+    readStoredNamePromptDone()
+  );
+  const [nameDraft, setNameDraft] = useState(() => readStoredGuestName() ?? "");
   const [galleryFilter, setGalleryFilter] = useState<PhotoGalleryFilter>(() =>
     readStoredGalleryFilter()
   );
@@ -236,16 +259,34 @@ export function FotoPage() {
   const tableMenuRef = useRef<HTMLDivElement>(null);
 
   const images = useMemo(() => {
-    if (galleryFilter === "mine" && selectedTable !== null) {
-      return allImages.filter((img) => img.table === selectedTable);
+    if (galleryFilter === "mine" && selectedIdentity !== null) {
+      return allImages.filter((img) =>
+        photoMatchesIdentity(img, selectedIdentity)
+      );
     }
     return allImages;
-  }, [allImages, galleryFilter, selectedTable]);
+  }, [allImages, galleryFilter, selectedIdentity]);
 
-  const selectTable = useCallback((table: PhotoTableNumber) => {
-    writeStoredPhotoTable(table);
-    setSelectedTable(table);
+  const selectIdentity = useCallback((identity: PhotoIdentity) => {
+    writeStoredPhotoIdentity(identity);
+    setSelectedIdentity(identity);
     setTableMenuOpen(false);
+  }, []);
+
+  const finishNamePrompt = useCallback((rawName: string | null) => {
+    const name = rawName ? normalizeGuestName(rawName) || null : null;
+    writeStoredGuestName(name);
+    writeStoredNamePromptDone();
+    setGuestName(name);
+    setNameDraft(name ?? "");
+    setNamePromptDone(true);
+  }, []);
+
+  const saveGuestName = useCallback((rawName: string) => {
+    const name = normalizeGuestName(rawName) || null;
+    writeStoredGuestName(name);
+    setGuestName(name);
+    setNameDraft(name ?? "");
   }, []);
 
   const setFilter = useCallback((filter: PhotoGalleryFilter) => {
@@ -637,7 +678,7 @@ export function FotoPage() {
 
   const upload = useCallback(async () => {
     const client = supabase;
-    if (!client || files.length === 0 || selectedTable === null) return;
+    if (!client || files.length === 0 || selectedIdentity === null) return;
     setStatus("uploading");
     setError(null);
     setFailedUploads([]);
@@ -646,12 +687,22 @@ export function FotoPage() {
     const failed: { file: File; reason: string }[] = [];
 
     for (const file of files) {
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
-      const path = photoUploadPath(selectedTable, fileName);
+      const fileName = buildPhotoFileName(file.name, guestName);
+      const path = photoUploadPath(selectedIdentity, fileName);
       try {
         const { error: uploadError } = await client.storage
           .from(WEDDING_PHOTOS_BUCKET)
-          .upload(path, file, { cacheControl: "3600", upsert: false });
+          .upload(path, file, {
+            cacheControl: "3600",
+            upsert: false,
+            metadata: {
+              table:
+                selectedIdentity.kind === "table"
+                  ? String(selectedIdentity.table)
+                  : selectedIdentity.kind,
+              guestName: guestName ?? "",
+            },
+          });
         // Supabase kastar inte vid fel – felet returneras i `error`.
         if (uploadError) {
           failed.push({ file, reason: describeUploadError(uploadError.message) });
@@ -684,7 +735,7 @@ export function FotoPage() {
             : "Bilden kunde inte laddas upp:"
       );
     }
-  }, [files, fetchImages, selectedTable]);
+  }, [files, fetchImages, selectedIdentity, guestName]);
 
   if (!supabase) {
     return (
@@ -701,17 +752,14 @@ export function FotoPage() {
     );
   }
 
-  if (selectedTable === null) {
+  if (selectedIdentity === null) {
     return (
       <div className="foto-page">
-        <div className="foto-page__card">
-          <Link to="/" className="foto-page__back-corner">
-            ← Tillbaka till bröllopssidan
-          </Link>
+        <div className="foto-page__card foto-page__card--picker">
           <h1>Vilket bord sitter du vid?</h1>
           <p className="foto-page__intro muted">
             Välj ditt bord så kopplas bilderna du laddar upp till laget. Du kan
-            byta senare.
+            byta senare – och du måste inte välja om du inte vill.
           </p>
           <div
             className="foto-table-picker"
@@ -725,29 +773,110 @@ export function FotoPage() {
                 className="foto-table-picker__btn"
                 style={
                   {
-                    "--table-color": tableColor(table),
+                    "--table-color": identityColor({ kind: "table", table }),
                   } as CSSProperties
                 }
-                onClick={() => selectTable(table)}
+                onClick={() => selectIdentity({ kind: "table", table })}
               >
                 <span className="foto-table-picker__num">{table}</span>
                 <span className="foto-table-picker__label">Bord {table}</span>
               </button>
             ))}
           </div>
+          <div className="foto-table-picker__extras">
+            <button
+              type="button"
+              className="foto-table-picker__skip"
+              onClick={() => selectIdentity({ kind: "none" })}
+            >
+              Hoppa över
+            </button>
+            <button
+              type="button"
+              className="foto-table-picker__couple"
+              onClick={() => selectIdentity({ kind: "couple" })}
+              aria-label="Brudparet"
+            >
+              <span aria-hidden="true">♥</span>
+              Brudparet
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  const selectedColor = tableColor(selectedTable);
+  if (!namePromptDone) {
+    const chosenLabel =
+      selectedIdentity.kind === "none"
+        ? null
+        : identityLabel(selectedIdentity);
+
+    return (
+      <div className="foto-page">
+        <div className="foto-page__card">
+          <h1>Vad heter du?</h1>
+          <p className="foto-page__intro muted">
+            {chosenLabel ? (
+              <>
+                Du valde <strong>{chosenLabel}</strong>. Vill du också att ditt
+                namn ska synas tillsammans med bilderna? Det är valfritt.
+              </>
+            ) : (
+              <>
+                Vill du att ditt namn ska synas tillsammans med bilderna? Det är
+                valfritt.
+              </>
+            )}
+          </p>
+          <form
+            className="foto-name-prompt"
+            onSubmit={(e) => {
+              e.preventDefault();
+              finishNamePrompt(nameDraft);
+            }}
+          >
+            <label className="foto-name-prompt__field">
+              <span className="visually-hidden">Ditt namn</span>
+              <input
+                type="text"
+                name="guest-name"
+                autoComplete="name"
+                autoFocus
+                maxLength={PHOTO_GUEST_NAME_MAX_LEN}
+                placeholder="Ditt namn"
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+              />
+            </label>
+            <button type="submit" className="foto-name-prompt__submit">
+              Fortsätt
+            </button>
+            <button
+              type="button"
+              className="foto-name-prompt__skip"
+              onClick={() => finishNamePrompt(null)}
+            >
+              Hoppa över
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedColor = identityColor(selectedIdentity);
+  const selectedLabel = identityLabel(selectedIdentity);
+  const mineFilterLabel =
+    selectedIdentity.kind === "couple"
+      ? "Bara brudparet"
+      : selectedIdentity.kind === "none"
+        ? "Bara utan bord"
+        : "Bara mitt bord";
 
   return (
     <div className={`foto-page ${mode === "gallery" ? "foto-page--gallery" : ""}`}>
       <div className="foto-page__card">
-        <Link to="/" className="foto-page__back-corner">
-          ← Tillbaka till bröllopssidan
-        </Link>
         <Link to="/qrcode" className="foto-page__qr-corner" title="QR-kod">
           QR
         </Link>
@@ -786,8 +915,14 @@ export function FotoPage() {
             <p className="foto-upload__table-hint muted tiny">
               Uppladdningar sparas till{" "}
               <strong style={{ color: selectedColor ?? undefined }}>
-                Bord {selectedTable}
+                {selectedLabel}
               </strong>
+              {guestName ? (
+                <>
+                  {" "}
+                  som <strong>{guestName}</strong>
+                </>
+              ) : null}
               .
             </p>
             <div
@@ -871,7 +1006,7 @@ export function FotoPage() {
           <div className="foto-gallery">
             {galleryFilter === "mine" && (
               <p className="foto-gallery__filter-hint muted tiny">
-                Visar bara Bord {selectedTable}
+                Visar bara {selectedLabel}
                 {galleryError ? "" : ` · ${images.length} bilder`}
               </p>
             )}
@@ -882,13 +1017,23 @@ export function FotoPage() {
             ) : images.length === 0 ? (
               <p className="muted">
                 {galleryFilter === "mine"
-                  ? "Inga bilder från ditt bord ännu."
+                  ? selectedIdentity.kind === "couple"
+                    ? "Inga bilder från brudparet ännu."
+                    : selectedIdentity.kind === "none"
+                      ? "Inga bilder utan bord ännu."
+                      : "Inga bilder från ditt bord ännu."
                   : "Inga bilder ännu."}
               </p>
             ) : (
               <div className="foto-gallery__grid">
                 {images.map((img) => {
-                  const color = tableColor(img.table);
+                  const color = photoSourceColor(img);
+                  const mark = photoSourceMark(img);
+                  const sourceLabel = img.fromCouple
+                    ? "Brudparet"
+                    : img.table !== null
+                      ? `Bord ${img.table}`
+                      : null;
                   return (
                     <a
                       key={img.path}
@@ -896,6 +1041,7 @@ export function FotoPage() {
                       target="_blank"
                       rel="noreferrer"
                       className="foto-gallery__item"
+                      aria-label={photoAttribution(img) ?? "Bild"}
                       style={
                         color
                           ? ({ "--table-color": color } as CSSProperties)
@@ -903,13 +1049,18 @@ export function FotoPage() {
                       }
                     >
                       <img src={img.url} alt="" loading="lazy" />
-                      {img.table !== null && (
+                      {mark !== null && (
                         <span
-                          className="foto-gallery__badge"
-                          aria-label={`Bord ${img.table}`}
+                          className={`foto-gallery__badge${
+                            img.fromCouple ? " foto-gallery__badge--text" : ""
+                          }`}
+                          aria-label={sourceLabel ?? undefined}
                         >
-                          {img.table}
+                          {mark}
                         </span>
+                      )}
+                      {img.guestName && (
+                        <span className="foto-gallery__name">{img.guestName}</span>
                       )}
                     </a>
                   );
@@ -974,16 +1125,17 @@ export function FotoPage() {
               </AnimatePresence>
             </div>
 
-            {currentImage?.table !== null && currentImage?.table !== undefined && (
+            {currentImage && photoAttribution(currentImage) && (
               <div
                 className="foto-slideshow__table-badge"
                 style={
                   {
-                    "--table-color": tableColor(currentImage.table),
+                    "--table-color":
+                      photoSourceColor(currentImage) ?? undefined,
                   } as CSSProperties
                 }
               >
-                Bord {currentImage.table}
+                {photoAttribution(currentImage)}
               </div>
             )}
 
@@ -1210,12 +1362,12 @@ export function FotoPage() {
               onClick={() => setTableMenuOpen((open) => !open)}
               aria-expanded={tableMenuOpen}
               aria-controls="foto-table-menu"
-              aria-label={`Bord ${selectedTable}, öppna meny`}
+              aria-label={`${selectedLabel}, öppna meny`}
             >
               <span className="foto-table-sticky__num" aria-hidden="true">
-                {selectedTable}
+                {identityChipMark(selectedIdentity)}
               </span>
-              <span className="foto-table-sticky__text">Bord {selectedTable}</span>
+              <span className="foto-table-sticky__text">{selectedLabel}</span>
             </button>
 
             <AnimatePresence>
@@ -1256,14 +1408,14 @@ export function FotoPage() {
                       className={galleryFilter === "mine" ? "is-active" : ""}
                       onClick={() => setFilter("mine")}
                     >
-                      Bara mitt bord
+                      {mineFilterLabel}
                     </button>
                     <button
                       type="button"
                       className={galleryFilter === "all" ? "is-active" : ""}
                       onClick={() => setFilter("all")}
                     >
-                      Alla bord
+                      Alla bilder
                     </button>
                   </div>
                   <p className="foto-table-sticky__menu-title">Byt bord</p>
@@ -1277,20 +1429,82 @@ export function FotoPage() {
                         key={table}
                         type="button"
                         className={`foto-table-sticky__pick${
-                          table === selectedTable ? " is-selected" : ""
+                          identitiesEqual(selectedIdentity, {
+                            kind: "table",
+                            table,
+                          })
+                            ? " is-selected"
+                            : ""
                         }`}
                         style={
                           {
-                            "--table-color": tableColor(table),
+                            "--table-color": identityColor({
+                              kind: "table",
+                              table,
+                            }),
                           } as CSSProperties
                         }
-                        onClick={() => selectTable(table)}
-                        aria-pressed={table === selectedTable}
+                        onClick={() =>
+                          selectIdentity({ kind: "table", table })
+                        }
+                        aria-pressed={identitiesEqual(selectedIdentity, {
+                          kind: "table",
+                          table,
+                        })}
                       >
                         {table}
                       </button>
                     ))}
                   </div>
+                  <div className="foto-table-sticky__alts">
+                    <button
+                      type="button"
+                      className={`foto-table-sticky__alt${
+                        selectedIdentity.kind === "couple" ? " is-selected" : ""
+                      }`}
+                      style={
+                        {
+                          "--table-color": PHOTO_COUPLE_COLOR,
+                        } as CSSProperties
+                      }
+                      onClick={() => selectIdentity({ kind: "couple" })}
+                      aria-pressed={selectedIdentity.kind === "couple"}
+                    >
+                      ♥ Brudparet
+                    </button>
+                    <button
+                      type="button"
+                      className={`foto-table-sticky__alt${
+                        selectedIdentity.kind === "none" ? " is-selected" : ""
+                      }`}
+                      onClick={() => selectIdentity({ kind: "none" })}
+                      aria-pressed={selectedIdentity.kind === "none"}
+                    >
+                      Inget bord
+                    </button>
+                  </div>
+                  <p className="foto-table-sticky__menu-title">Ditt namn</p>
+                  <form
+                    className="foto-table-sticky__name"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      saveGuestName(nameDraft);
+                    }}
+                  >
+                    <label>
+                      <span className="visually-hidden">Ditt namn</span>
+                      <input
+                        type="text"
+                        name="guest-name"
+                        autoComplete="name"
+                        maxLength={PHOTO_GUEST_NAME_MAX_LEN}
+                        placeholder="Valfritt"
+                        value={nameDraft}
+                        onChange={(e) => setNameDraft(e.target.value)}
+                      />
+                    </label>
+                    <button type="submit">Spara</button>
+                  </form>
                 </motion.div>
               )}
             </AnimatePresence>

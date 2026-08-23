@@ -172,6 +172,7 @@
   position: absolute;
   top: 8px;
   left: 8px;
+  max-width: calc(100% - 16px);
   padding: 4px 8px;
   border-radius: $radius-full;
   background: var(--table-color, rgba(44, 37, 32, 0.82));
@@ -180,6 +181,9 @@
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 

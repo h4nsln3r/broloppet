@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import type { Session } from "@supabase/supabase-js";
-import { tableColor } from "../../config/photoTables";
 import { supabase, WEDDING_PHOTOS_BUCKET } from "../../lib/supabase";
 import {
   fetchAdminWeddingPhotos,
   hiddenPhotoPath,
+  photoAttribution,
+  photoSourceColor,
   visiblePhotoPathFromHidden,
   type WeddingPhoto,
 } from "../../lib/weddingPhotos";
@@ -398,7 +399,7 @@ export function FotoAdminPage() {
                 </span>
               </h2>
               <p className="foto-admin__section-hint muted">
-                Visas i galleri och bildspel. Bordet visas på varje bild.
+                Visas i galleri och bildspel. Bord och namn visas på varje bild.
               </p>
               {visibleImages.length === 0 ? (
                 <p className="foto-admin__empty muted">
@@ -408,7 +409,8 @@ export function FotoAdminPage() {
                 <div className="foto-admin__grid">
                   {visibleImages.map((img) => {
                     const busy = busyPath === img.path;
-                    const color = tableColor(img.table);
+                    const color = photoSourceColor(img);
+                    const attribution = photoAttribution(img);
                     return (
                       <div
                         key={img.path}
@@ -420,12 +422,12 @@ export function FotoAdminPage() {
                         }
                       >
                         <img src={img.url} alt="" loading="lazy" />
-                        {img.table !== null && (
+                        {attribution && (
                           <span
                             className="foto-admin__table-badge"
-                            aria-label={`Bord ${img.table}`}
+                            aria-label={attribution}
                           >
-                            Bord {img.table}
+                            {attribution}
                           </span>
                         )}
                         <div className="foto-admin__actions">
@@ -479,7 +481,8 @@ export function FotoAdminPage() {
                 <div className="foto-admin__grid">
                   {hiddenImages.map((img) => {
                     const busy = busyPath === img.path;
-                    const color = tableColor(img.table);
+                    const color = photoSourceColor(img);
+                    const attribution = photoAttribution(img);
                     return (
                       <div
                         key={img.path}
@@ -491,12 +494,12 @@ export function FotoAdminPage() {
                         }
                       >
                         <img src={img.url} alt="" loading="lazy" />
-                        {img.table !== null ? (
+                        {attribution ? (
                           <span
                             className="foto-admin__table-badge"
-                            aria-label={`Bord ${img.table}`}
+                            aria-label={attribution}
                           >
-                            Bord {img.table}
+                            {attribution}
                           </span>
                         ) : (
                           <span className="foto-admin__badge">Gömd</span>
