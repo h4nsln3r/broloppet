@@ -24,6 +24,8 @@ type UseDualBouncyPhysicsOptions = {
   onBounce2?: () => void;
   /** Startposition andra hjärtat (när det spawnar) */
   initial2?: { x: number; y: number };
+  /** Fartmultiplikator (1 = herons normalfart). */
+  speed?: number;
 };
 
 export function useDualBouncyPhysics({
@@ -33,6 +35,7 @@ export function useDualBouncyPhysics({
   onBounce1,
   onBounce2,
   initial2,
+  speed = 1,
 }: UseDualBouncyPhysicsOptions): { body1: BodyResult; body2: BodyResult } {
   const x1 = useMotionValue(40);
   const y1 = useMotionValue(40);
@@ -43,6 +46,8 @@ export function useDualBouncyPhysics({
   const vy1 = useRef(110);
   const vx2 = useRef(-120);
   const vy2 = useRef(90);
+  const speedRef = useRef(speed);
+  speedRef.current = speed;
 
   const clamp = (v: number) =>
     Math.max(-VELOCITY_MAX, Math.min(VELOCITY_MAX, v));
@@ -101,7 +106,7 @@ export function useDualBouncyPhysics({
   useAnimationFrame((_t, delta) => {
     const el = containerRef.current;
     if (!el) return;
-    const dt = delta / 1000;
+    const dt = (delta / 1000) * Math.max(0.1, speedRef.current);
     const rect = el.getBoundingClientRect();
     const minX = PADDING;
     const minY = PADDING;

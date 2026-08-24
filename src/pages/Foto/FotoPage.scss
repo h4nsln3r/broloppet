@@ -802,6 +802,10 @@
     }
   }
 
+  &.foto-slideshow--hearts {
+    cursor: default;
+  }
+
   .foto-slideshow__preload {
     position: absolute;
     width: 1px;
@@ -853,6 +857,19 @@
     &--kenburns {
       animation: foto-slideshow-kenburns var(--slideshow-kenburns-ms) linear forwards;
       transform-origin: center center;
+    }
+  }
+
+  .foto-slideshow__hearts {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+
+    .bouncyHeart {
+      z-index: 1;
+      pointer-events: auto;
+      cursor: pointer;
     }
   }
 
@@ -1192,6 +1209,13 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+  }
+
+  .foto-slideshow__effect-hint {
+    margin: 8px 0 0;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.42);
   }
 
   .foto-slideshow__effect {

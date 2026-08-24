@@ -37,18 +37,23 @@ import {
   photoUploadPath,
   type WeddingPhoto,
 } from "../../lib/weddingPhotos";
+import { SlideshowHearts } from "./SlideshowHearts";
 import "./FotoPage.scss";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 type ViewMode = "upload" | "gallery" | "slideshow";
 type FailedUpload = { name: string; reason: string };
 type SlideDirection = 1 | -1;
-type TransitionEffect = "fade" | "slide" | "zoom" | "flip" | "soft";
+type TransitionEffect = "fade" | "slide" | "zoom" | "flip" | "soft" | "hearts";
 
 const DEFAULT_SLIDESHOW_INTERVAL_MS = 6000;
 const SLIDESHOW_INTERVAL_MIN_MS = 2000;
 const SLIDESHOW_INTERVAL_MAX_MS = 15000;
 const SLIDESHOW_INTERVAL_STEP_MS = 1000;
+const DEFAULT_HEARTS_SPEED = 1;
+const HEARTS_SPEED_MIN = 0.5;
+const HEARTS_SPEED_MAX = 3;
+const HEARTS_SPEED_STEP = 0.1;
 const SLIDE_TRANSITION_S = 0.7;
 const CONTROLS_IDLE_MS = 2500;
 const DEFAULT_SLIDESHOW_BG = "#14110f";
@@ -58,6 +63,17 @@ const IMAGE_POLL_INTERVAL_MS = 12_000;
 function formatIntervalSeconds(ms: number): string {
   const seconds = Math.round(ms / 1000);
   return seconds === 1 ? "1 sekund" : `${seconds} sekunder`;
+}
+
+function formatHeartsSpeed(speed: number): string {
+  const rounded = Math.round(speed * 10) / 10;
+  const text = Number.isInteger(rounded)
+    ? String(rounded)
+    : rounded.toLocaleString("sv-SE", {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      });
+  return `${text}×`;
 }
 
 function sameImageList(a: WeddingPhoto[], b: WeddingPhoto[]): boolean {
@@ -80,6 +96,7 @@ const EFFECT_OPTIONS: { id: TransitionEffect; label: string }[] = [
   { id: "zoom", label: "Zooma" },
   { id: "flip", label: "Vänd" },
   { id: "soft", label: "Mjuk" },
+  { id: "hearts", label: "Hjärtan" },
 ];
 
 function shuffle<T>(arr: T[]): T[] {
@@ -126,6 +143,7 @@ function insertAfterCurrent(
 
 function getSlideVariants(effect: TransitionEffect): Variants {
   switch (effect) {
+    case "hearts":
     case "fade":
       return {
         enter: { opacity: 0 },
@@ -245,10 +263,12 @@ export function FotoPage() {
   const [slideshowIntervalMs, setSlideshowIntervalMs] = useState(
     DEFAULT_SLIDESHOW_INTERVAL_MS
   );
+  const [heartsSpeed, setHeartsSpeed] = useState(DEFAULT_HEARTS_SPEED);
   const [transitionEffect, setTransitionEffect] =
     useState<TransitionEffect>("slide");
   const prefersReducedMotion = useReducedMotion();
   const advanceRef = useRef<(dir: SlideDirection) => void>(() => {});
+  const slideshowRef = useRef<HTMLDivElement>(null);
   const idleTimerRef = useRef<number | null>(null);
   const configOpenRef = useRef(false);
   const randomOrderRef = useRef(false);
@@ -295,6 +315,12 @@ export function FotoPage() {
   }, []);
 
   const chromeVisible = controlsVisible || configOpen;
+  const heartsDriveAdvance =
+    transitionEffect === "hearts" && !prefersReducedMotion;
+
+  const bounceAdvance = useCallback(() => {
+    advanceRef.current(1);
+  }, []);
 
   useEffect(() => {
     configOpenRef.current = configOpen;
@@ -546,11 +572,18 @@ export function FotoPage() {
   /** Timeout per bild – startas om vid varje byte (även manuell), så timing hålls jämn. */
   useEffect(() => {
     if (mode !== "slideshow" || images.length === 0) return;
+    if (heartsDriveAdvance) return;
     const id = window.setTimeout(() => {
       advanceRef.current(1);
     }, slideshowIntervalMs);
     return () => window.clearTimeout(id);
-  }, [mode, images.length, slideshowIndex, slideshowIntervalMs]);
+  }, [
+    mode,
+    images.length,
+    slideshowIndex,
+    slideshowIntervalMs,
+    heartsDriveAdvance,
+  ]);
 
   const currentImageIndex =
     orderIndices.length > 0 && orderIndices[slideshowIndex] !== undefined
@@ -1072,7 +1105,10 @@ export function FotoPage() {
 
         {mode === "slideshow" && images.length > 0 && (
           <div
-            className={`foto-slideshow${chromeVisible ? " foto-slideshow--controls-visible" : ""}`}
+            ref={slideshowRef}
+            className={`foto-slideshow${chromeVisible ? " foto-slideshow--controls-visible" : ""}${
+              heartsDriveAdvance ? " foto-slideshow--hearts" : ""
+            }`}
             role="region"
             aria-label="Bildspel"
             aria-live="polite"
@@ -1115,7 +1151,7 @@ export function FotoPage() {
                     src={currentImage?.url}
                     alt=""
                     className={`foto-slideshow__image${
-                      transitionEffect === "flip"
+                      transitionEffect === "flip" || transitionEffect === "hearts"
                         ? ""
                         : " foto-slideshow__image--kenburns"
                     }`}
@@ -1125,7 +1161,14 @@ export function FotoPage() {
               </AnimatePresence>
             </div>
 
-            {currentImage && photoAttribution(currentImage) && (
+            {heartsDriveAdvance && (
+              <SlideshowHearts
+                containerRef={slideshowRef}
+                onBounce={bounceAdvance}
+                speed={heartsSpeed}
+              />
+            )}
+
               <div
                 className="foto-slideshow__table-badge"
                 style={
@@ -1188,40 +1231,79 @@ export function FotoPage() {
                       style={{ transformOrigin: "top left" }}
                     >
                       <div className="foto-slideshow__config-section">
-                        <p className="foto-slideshow__config-label">Bytestid</p>
-                        <div className="foto-slideshow__speed">
-                          <div className="foto-slideshow__speed-header">
-                            <span className="foto-slideshow__speed-hint">Snabb</span>
-                            <span
-                              className="foto-slideshow__speed-value"
-                              aria-live="polite"
-                            >
-                              {formatIntervalSeconds(slideshowIntervalMs)}
-                            </span>
-                            <span className="foto-slideshow__speed-hint">Långsam</span>
-                          </div>
-                          <label className="foto-slideshow__speed-slider">
-                            <span className="visually-hidden">
-                              Tid mellan bildbyten
-                            </span>
-                            <input
-                              type="range"
-                              min={SLIDESHOW_INTERVAL_MIN_MS}
-                              max={SLIDESHOW_INTERVAL_MAX_MS}
-                              step={SLIDESHOW_INTERVAL_STEP_MS}
-                              value={slideshowIntervalMs}
-                              onChange={(e) =>
-                                setSlideshowIntervalMs(Number(e.target.value))
-                              }
-                              aria-valuemin={SLIDESHOW_INTERVAL_MIN_MS / 1000}
-                              aria-valuemax={SLIDESHOW_INTERVAL_MAX_MS / 1000}
-                              aria-valuenow={slideshowIntervalMs / 1000}
-                              aria-valuetext={formatIntervalSeconds(
-                                slideshowIntervalMs
-                              )}
-                            />
-                          </label>
-                        </div>
+                        {heartsDriveAdvance ? (
+                          <>
+                            <p className="foto-slideshow__config-label">Fart</p>
+                            <div className="foto-slideshow__speed">
+                              <div className="foto-slideshow__speed-header">
+                                <span className="foto-slideshow__speed-hint">Långsam</span>
+                                <span
+                                  className="foto-slideshow__speed-value"
+                                  aria-live="polite"
+                                >
+                                  {formatHeartsSpeed(heartsSpeed)}
+                                </span>
+                                <span className="foto-slideshow__speed-hint">Snabb</span>
+                              </div>
+                              <label className="foto-slideshow__speed-slider">
+                                <span className="visually-hidden">
+                                  Hjärtats fart
+                                </span>
+                                <input
+                                  type="range"
+                                  min={HEARTS_SPEED_MIN}
+                                  max={HEARTS_SPEED_MAX}
+                                  step={HEARTS_SPEED_STEP}
+                                  value={heartsSpeed}
+                                  onChange={(e) =>
+                                    setHeartsSpeed(Number(e.target.value))
+                                  }
+                                  aria-valuemin={HEARTS_SPEED_MIN}
+                                  aria-valuemax={HEARTS_SPEED_MAX}
+                                  aria-valuenow={heartsSpeed}
+                                  aria-valuetext={formatHeartsSpeed(heartsSpeed)}
+                                />
+                              </label>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <p className="foto-slideshow__config-label">Bytestid</p>
+                            <div className="foto-slideshow__speed">
+                              <div className="foto-slideshow__speed-header">
+                                <span className="foto-slideshow__speed-hint">Snabb</span>
+                                <span
+                                  className="foto-slideshow__speed-value"
+                                  aria-live="polite"
+                                >
+                                  {formatIntervalSeconds(slideshowIntervalMs)}
+                                </span>
+                                <span className="foto-slideshow__speed-hint">Långsam</span>
+                              </div>
+                              <label className="foto-slideshow__speed-slider">
+                                <span className="visually-hidden">
+                                  Tid mellan bildbyten
+                                </span>
+                                <input
+                                  type="range"
+                                  min={SLIDESHOW_INTERVAL_MIN_MS}
+                                  max={SLIDESHOW_INTERVAL_MAX_MS}
+                                  step={SLIDESHOW_INTERVAL_STEP_MS}
+                                  value={slideshowIntervalMs}
+                                  onChange={(e) =>
+                                    setSlideshowIntervalMs(Number(e.target.value))
+                                  }
+                                  aria-valuemin={SLIDESHOW_INTERVAL_MIN_MS / 1000}
+                                  aria-valuemax={SLIDESHOW_INTERVAL_MAX_MS / 1000}
+                                  aria-valuenow={slideshowIntervalMs / 1000}
+                                  aria-valuetext={formatIntervalSeconds(
+                                    slideshowIntervalMs
+                                  )}
+                                />
+                              </label>
+                            </div>
+                          </>
+                        )}
                       </div>
 
                       <div className="foto-slideshow__config-section">
@@ -1310,6 +1392,13 @@ export function FotoPage() {
                             </button>
                           ))}
                         </div>
+                        {transitionEffect === "hearts" && (
+                          <p className="foto-slideshow__effect-hint">
+                            {prefersReducedMotion
+                              ? "Hjärtan är avstängda vid minskad rörelse, så bilderna byts med tidsintervallet."
+                              : "Bilderna byts när hjärtat studsar. Håll in det i tre sekunder för ett till hjärta."}
+                          </p>
+                        )}
                       </div>
                     </motion.div>
                   )}
