@@ -1169,6 +1169,7 @@ export function FotoPage() {
               />
             )}
 
+            {currentImage && photoAttribution(currentImage) && (
               <div
                 className="foto-slideshow__table-badge"
                 style={
