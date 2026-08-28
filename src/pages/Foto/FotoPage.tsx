@@ -38,6 +38,7 @@ import {
   type WeddingPhoto,
 } from "../../lib/weddingPhotos";
 import { SlideshowHearts } from "./SlideshowHearts";
+import { SlideshowQr } from "./SlideshowQr";
 import "./FotoPage.scss";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
@@ -59,6 +60,29 @@ const CONTROLS_IDLE_MS = 2500;
 const DEFAULT_SLIDESHOW_BG = "#14110f";
 /** Hur ofta galleri/bildspel kollar efter nya uppladdningar. */
 const IMAGE_POLL_INTERVAL_MS = 12_000;
+const MAX_UPLOAD_FILES = 5;
+const SLIDESHOW_QR_STORAGE_KEY = "wedding-photo-slideshow-qr";
+
+function readStoredSlideshowQr(): boolean {
+  try {
+    return localStorage.getItem(SLIDESHOW_QR_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeStoredSlideshowQr(on: boolean): void {
+  try {
+    if (on) localStorage.setItem(SLIDESHOW_QR_STORAGE_KEY, "1");
+    else localStorage.removeItem(SLIDESHOW_QR_STORAGE_KEY);
+  } catch {
+    // Ignorera privat läge / blockerad storage.
+  }
+}
+
+function imageFilesFrom(list: Iterable<File>): File[] {
+  return Array.from(list).filter((file) => file.type.startsWith("image/"));
+}
 
 function formatIntervalSeconds(ms: number): string {
   const seconds = Math.round(ms / 1000);
@@ -236,6 +260,8 @@ export function FotoPage() {
   const [error, setError] = useState<string | null>(null);
   const [failedUploads, setFailedUploads] = useState<FailedUpload[]>([]);
   const [successCount, setSuccessCount] = useState(0);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [limitNotice, setLimitNotice] = useState<string | null>(null);
   const [allImages, setAllImages] = useState<WeddingPhoto[]>([]);
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const [mode, setMode] = useState<ViewMode>("upload");
@@ -255,6 +281,9 @@ export function FotoPage() {
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [randomOrder, setRandomOrder] = useState(false);
   const [preferNewImages, setPreferNewImages] = useState(false);
+  const [showSlideshowQr, setShowSlideshowQr] = useState(() =>
+    readStoredSlideshowQr()
+  );
   const [orderIndices, setOrderIndices] = useState<number[]>([]);
   const [slideDirection, setSlideDirection] = useState<SlideDirection>(1);
   const [configOpen, setConfigOpen] = useState(false);
@@ -626,6 +655,14 @@ export function FotoPage() {
     setRandomOrder(true);
   }, [images.length, orderIndices, slideshowIndex, randomOrder, preferNewImages]);
 
+  const toggleSlideshowQr = useCallback(() => {
+    setShowSlideshowQr((on) => {
+      const next = !on;
+      writeStoredSlideshowQr(next);
+      return next;
+    });
+  }, []);
+
   const togglePreferNewImages = useCallback(() => {
     const n = images.length;
     if (n === 0) return;
@@ -672,54 +709,92 @@ export function FotoPage() {
     setError(null);
     setFailedUploads([]);
     setSuccessCount(0);
+    setUploadingIndex(null);
   }, []);
+
+  const addImageFiles = useCallback(
+    (incoming: File[]) => {
+      if (status === "uploading") return;
+      const images = imageFilesFrom(incoming);
+      if (images.length === 0) return;
+
+      const room = Math.max(0, MAX_UPLOAD_FILES - files.length);
+      if (room === 0) {
+        setLimitNotice(
+          `Du kan max ladda upp ${MAX_UPLOAD_FILES} bilder åt gången. Ta bort någon bild först.`
+        );
+        return;
+      }
+
+      resetUploadStatus();
+      const accepted = images.slice(0, room);
+      setFiles((prev) => {
+        const remaining = Math.max(0, MAX_UPLOAD_FILES - prev.length);
+        return remaining === 0 ? prev : [...prev, ...accepted.slice(0, remaining)];
+      });
+      setLimitNotice(
+        accepted.length < images.length
+          ? `Du kan max ladda upp ${MAX_UPLOAD_FILES} bilder åt gången.`
+          : null
+      );
+    },
+    [files.length, resetUploadStatus, status]
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      const f = Array.from(e.dataTransfer.files).filter((file) =>
-        file.type.startsWith("image/")
-      );
-      if (f.length === 0) return;
-      resetUploadStatus();
-      setFiles((prev) => [...prev, ...f]);
+      addImageFiles(Array.from(e.dataTransfer.files));
     },
-    [resetUploadStatus]
+    [addImageFiles]
   );
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
-  }, []);
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect =
+        status === "uploading" || files.length >= MAX_UPLOAD_FILES
+          ? "none"
+          : "copy";
+    },
+    [files.length, status]
+  );
 
   const handleFileInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const f = Array.from(e.target.files ?? []).filter((file) =>
-        file.type.startsWith("image/")
-      );
+      const selected = Array.from(e.target.files ?? []);
       e.target.value = "";
-      if (f.length === 0) return;
-      resetUploadStatus();
-      setFiles((prev) => [...prev, ...f]);
+      addImageFiles(selected);
     },
-    [resetUploadStatus]
+    [addImageFiles]
   );
 
-  const removeFile = useCallback((index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-  }, []);
+  const removeFile = useCallback(
+    (index: number) => {
+      if (status === "uploading") return;
+      setFiles((prev) => prev.filter((_, i) => i !== index));
+      setLimitNotice(null);
+    },
+    [status]
+  );
 
   const upload = useCallback(async () => {
     const client = supabase;
     if (!client || files.length === 0 || selectedIdentity === null) return;
+    const batch = files.slice(0, MAX_UPLOAD_FILES);
     setStatus("uploading");
     setError(null);
     setFailedUploads([]);
     setSuccessCount(0);
+    setUploadingIndex(0);
+    setLimitNotice(null);
 
     const failed: { file: File; reason: string }[] = [];
+    let succeeded = 0;
 
-    for (const file of files) {
+    for (let i = 0; i < batch.length; i++) {
+      setUploadingIndex(i);
+      const file = batch[i];
       const fileName = buildPhotoFileName(file.name, guestName);
       const path = photoUploadPath(selectedIdentity, fileName);
       try {
@@ -739,6 +814,10 @@ export function FotoPage() {
         // Supabase kastar inte vid fel – felet returneras i `error`.
         if (uploadError) {
           failed.push({ file, reason: describeUploadError(uploadError.message) });
+        } else {
+          succeeded += 1;
+          setSuccessCount(succeeded);
+          await fetchImages();
         }
       } catch (err) {
         failed.push({
@@ -748,10 +827,7 @@ export function FotoPage() {
       }
     }
 
-    await fetchImages();
-
-    const succeeded = files.length - failed.length;
-    setSuccessCount(succeeded);
+    setUploadingIndex(null);
     setFailedUploads(failed.map(({ file, reason }) => ({ name: file.name, reason })));
     // Behåll bara filer som misslyckades, så användaren kan försöka igen.
     setFiles(failed.map((f) => f.file));
@@ -762,7 +838,7 @@ export function FotoPage() {
       setStatus("error");
       setError(
         succeeded > 0
-          ? `${succeeded} av ${files.length} bilder laddades upp. ${failed.length} misslyckades:`
+          ? `${succeeded} av ${batch.length} bilder laddades upp. ${failed.length} misslyckades:`
           : failed.length > 1
             ? "Ingen av bilderna kunde laddas upp:"
             : "Bilden kunde inte laddas upp:"
@@ -906,6 +982,9 @@ export function FotoPage() {
       : selectedIdentity.kind === "none"
         ? "Bara utan bord"
         : "Bara mitt bord";
+  const uploadBusy = status === "uploading";
+  const uploadFull = files.length >= MAX_UPLOAD_FILES;
+  const uploadBlocked = uploadBusy || uploadFull;
 
   return (
     <div className={`foto-page ${mode === "gallery" ? "foto-page--gallery" : ""}`}>
@@ -959,45 +1038,130 @@ export function FotoPage() {
               .
             </p>
             <div
-              className="foto-upload__drop"
+              className={`foto-upload__drop${uploadBlocked ? " is-disabled" : ""}`}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
+              aria-disabled={uploadBlocked}
             >
               <p>Dra och släpp bilder här</p>
-              <p className="tiny muted">eller</p>
-              <label className="foto-upload__label">
+              <p className="tiny muted">
+                {uploadFull
+                  ? "Max 5 bilder – ta bort någon för att lägga till fler"
+                  : "Max 5 bilder åt gången"}
+              </p>
+              <label
+                className={`foto-upload__label${uploadBlocked ? " is-disabled" : ""}`}
+              >
                 Välj filer
                 <input
                   type="file"
                   accept="image/*"
                   multiple
+                  disabled={uploadBlocked}
                   onChange={handleFileInput}
                   className="foto-upload__input"
                 />
               </label>
             </div>
 
+            {limitNotice && (
+              <p className="foto-upload__limit" role="status">
+                {limitNotice}
+              </p>
+            )}
+
             {files.length > 0 && (
               <div className="foto-upload__list">
-                {files.map((f, i) => (
-                  <div key={i} className="foto-upload__item">
-                    <span>{f.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(i)}
-                      aria-label="Ta bort"
+                {files.map((f, i) => {
+                  const phase =
+                    !uploadBusy || uploadingIndex === null
+                      ? "idle"
+                      : i < uploadingIndex
+                        ? "done"
+                        : i === uploadingIndex
+                          ? "active"
+                          : "queued";
+                  return (
+                    <div
+                      key={`${f.name}-${f.size}-${f.lastModified}-${i}`}
+                      className={`foto-upload__item${
+                        phase === "active" ? " is-active" : ""
+                      }${phase === "done" ? " is-done" : ""}`}
                     >
-                      ×
-                    </button>
+                      <span className="foto-upload__item-name">{f.name}</span>
+                      {uploadBusy ? (
+                        <span className="foto-upload__item-status">
+                          {phase === "active" && (
+                            <>
+                              <span
+                                className="foto-upload__spinner"
+                                aria-hidden="true"
+                              />
+                              <span>Laddar upp</span>
+                            </>
+                          )}
+                          {phase === "done" && <span>Klar</span>}
+                          {phase === "queued" && (
+                            <span className="muted">Väntar</span>
+                          )}
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => removeFile(i)}
+                          aria-label={`Ta bort ${f.name}`}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+                {uploadBusy && (
+                  <div className="foto-upload__progress">
+                    <div
+                      className="foto-upload__bar"
+                      role="progressbar"
+                      aria-valuemin={0}
+                      aria-valuemax={files.length}
+                      aria-valuenow={
+                        uploadingIndex === null
+                          ? files.length
+                          : uploadingIndex + 1
+                      }
+                      aria-label="Uppladdningsförlopp"
+                    >
+                      <span
+                        className="foto-upload__bar-fill"
+                        style={{
+                          width: `${
+                            files.length === 0
+                              ? 0
+                              : ((uploadingIndex === null
+                                  ? files.length
+                                  : uploadingIndex + 1) /
+                                  files.length) *
+                                100
+                          }%`,
+                        }}
+                      />
+                    </div>
+                    <p
+                      className="foto-upload__progress-text"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      Laddar upp {(uploadingIndex ?? 0) + 1} av {files.length}…
+                    </p>
                   </div>
-                ))}
+                )}
                 <button
                   type="button"
                   className="foto-upload__submit"
                   onClick={upload}
-                  disabled={status === "uploading"}
+                  disabled={uploadBusy}
                 >
-                  {status === "uploading" ? "Laddar upp..." : "Ladda upp"}
+                  {uploadBusy ? "Laddar upp…" : "Ladda upp"}
                 </button>
               </div>
             )}
@@ -1183,6 +1347,8 @@ export function FotoPage() {
               </div>
             )}
 
+            {showSlideshowQr && <SlideshowQr />}
+
             <div className="foto-slideshow__chrome">
               <div className="foto-slideshow__admin">
                 <button
@@ -1336,6 +1502,27 @@ export function FotoPage() {
                           </button>
                           <p className="foto-slideshow__switch-hint">
                             Uppladdningar under spelet visas härnäst
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="foto-slideshow__config-section">
+                        <p className="foto-slideshow__config-label">QR-kod</p>
+                        <div className="foto-slideshow__switches">
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={showSlideshowQr}
+                            className={`foto-slideshow__switch${showSlideshowQr ? " is-on" : ""}`}
+                            onClick={toggleSlideshowQr}
+                          >
+                            <span className="foto-slideshow__switch-track">
+                              <span className="foto-slideshow__switch-thumb" />
+                            </span>
+                            <span>Visa QR-kod</span>
+                          </button>
+                          <p className="foto-slideshow__switch-hint">
+                            Syns i nedre hörnet så gäster kan scanna från TV:n
                           </p>
                         </div>
                       </div>
