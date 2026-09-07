@@ -37,6 +37,7 @@ import {
   photoUploadPath,
   type WeddingPhoto,
 } from "../../lib/weddingPhotos";
+import { GalleryLightbox } from "./GalleryLightbox";
 import { SlideshowHearts } from "./SlideshowHearts";
 import { SlideshowQr } from "./SlideshowQr";
 import "./FotoPage.scss";
@@ -278,6 +279,7 @@ export function FotoPage() {
     readStoredGalleryFilter()
   );
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
+  const [lightboxPath, setLightboxPath] = useState<string | null>(null);
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [randomOrder, setRandomOrder] = useState(false);
   const [preferNewImages, setPreferNewImages] = useState(false);
@@ -316,6 +318,11 @@ export function FotoPage() {
     return allImages;
   }, [allImages, galleryFilter, selectedIdentity]);
 
+  const lightboxIndex = useMemo(() => {
+    if (!lightboxPath) return -1;
+    return images.findIndex((img) => img.path === lightboxPath);
+  }, [images, lightboxPath]);
+
   const selectIdentity = useCallback((identity: PhotoIdentity) => {
     writeStoredPhotoIdentity(identity);
     setSelectedIdentity(identity);
@@ -342,6 +349,22 @@ export function FotoPage() {
     writeStoredGalleryFilter(filter);
     setGalleryFilter(filter);
   }, []);
+
+  const closeLightbox = useCallback(() => {
+    setLightboxPath(null);
+  }, []);
+
+  const openLightbox = useCallback((path: string) => {
+    setLightboxPath(path);
+  }, []);
+
+  const setLightboxIndex = useCallback(
+    (nextIndex: number) => {
+      const next = images[nextIndex];
+      if (next) setLightboxPath(next.path);
+    },
+    [images]
+  );
 
   const chromeVisible = controlsVisible || configOpen;
   const heartsDriveAdvance =
@@ -449,6 +472,7 @@ export function FotoPage() {
   }, [preferNewImages]);
 
   const startSlideshow = useCallback(() => {
+    setLightboxPath(null);
     setMode("slideshow");
     setSlideshowIndex(0);
     setRandomOrder(false);
@@ -1001,7 +1025,10 @@ export function FotoPage() {
           <button
             type="button"
             className={mode === "upload" ? "active" : ""}
-            onClick={() => setMode("upload")}
+            onClick={() => {
+              setLightboxPath(null);
+              setMode("upload");
+            }}
           >
             Ladda upp
           </button>
@@ -1232,18 +1259,21 @@ export function FotoPage() {
                       ? `Bord ${img.table}`
                       : null;
                   return (
-                    <a
+                    <button
+                      type="button"
                       key={img.path}
-                      href={img.url}
-                      target="_blank"
-                      rel="noreferrer"
                       className="foto-gallery__item"
-                      aria-label={photoAttribution(img) ?? "Bild"}
+                      aria-label={
+                        photoAttribution(img)
+                          ? `Visa ${photoAttribution(img)}`
+                          : "Visa bild"
+                      }
                       style={
                         color
                           ? ({ "--table-color": color } as CSSProperties)
                           : undefined
                       }
+                      onClick={() => openLightbox(img.path)}
                     >
                       <img src={img.url} alt="" loading="lazy" />
                       {mark !== null && (
@@ -1259,7 +1289,7 @@ export function FotoPage() {
                       {img.guestName && (
                         <span className="foto-gallery__name">{img.guestName}</span>
                       )}
-                    </a>
+                    </button>
                   );
                 })}
               </div>
@@ -1809,6 +1839,14 @@ export function FotoPage() {
             </svg>
           </Link>
         </>
+      )}
+      {lightboxIndex >= 0 && (
+        <GalleryLightbox
+          images={images}
+          index={lightboxIndex}
+          onClose={closeLightbox}
+          onIndexChange={setLightboxIndex}
+        />
       )}
     </div>
   );

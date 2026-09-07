@@ -1,0 +1,213 @@
+@use "../../styles/variables" as *;
+
+.gallery-lightbox__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.gallery-lightbox {
+  --lightbox-ui: rgba(20, 17, 15, 0.62);
+  --lightbox-ui-border: rgba(255, 255, 255, 0.14);
+  --lightbox-ui-text: rgba(255, 255, 255, 0.92);
+  --lightbox-side: max(8px, env(safe-area-inset-left, 0px));
+
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  background: rgba(20, 17, 15, 0.94);
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+
+.gallery-lightbox__dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+  outline: none;
+}
+
+.gallery-lightbox__preload {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gallery-lightbox__chrome {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px 10px;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+}
+
+.gallery-lightbox__counter {
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: $radius-full;
+  background: var(--lightbox-ui);
+  border: 1px solid var(--lightbox-ui-border);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: $fs-sm;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.gallery-lightbox__attribution {
+  margin: 0;
+  min-width: 0;
+  flex: 1;
+  padding: 4px 10px;
+  border-radius: $radius-full;
+  background: color-mix(in srgb, var(--table-color, #9a8f82) 55%, #14110f);
+  color: #fff;
+  font-size: $fs-sm;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gallery-lightbox__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.gallery-lightbox__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--lightbox-ui-border);
+  border-radius: $radius-full;
+  background: var(--lightbox-ui);
+  color: var(--lightbox-ui-text);
+  font-family: $font-body;
+  font-size: $fs-sm;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(20, 17, 15, 0.82);
+    border-color: rgba(255, 255, 255, 0.28);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: wait;
+  }
+
+  &--close {
+    width: 40px;
+    padding: 0;
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+}
+
+.gallery-lightbox__error {
+  margin: 0 14px 8px;
+  color: #ffd4d0;
+  font-size: $fs-sm;
+  text-align: right;
+}
+
+.gallery-lightbox__stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 8px 56px 24px;
+  touch-action: pan-y;
+}
+
+.gallery-lightbox__image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  user-select: none;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.gallery-lightbox__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--lightbox-ui-border);
+  background: rgba(20, 17, 15, 0.5);
+  backdrop-filter: blur(10px);
+  color: var(--lightbox-ui-text);
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: $radius-full;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(20, 17, 15, 0.82);
+    border-color: rgba(255, 255, 255, 0.28);
+  }
+
+  &--prev {
+    left: var(--lightbox-side);
+  }
+
+  &--next {
+    right: max(8px, env(safe-area-inset-right, 0px));
+  }
+}
+
+@media (max-width: 479px) {
+  .gallery-lightbox__chrome {
+    flex-wrap: wrap;
+    padding-inline: 10px;
+  }
+
+  .gallery-lightbox__attribution {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .gallery-lightbox__stage {
+    padding: 8px 8px 20px;
+  }
+
+  .gallery-lightbox__nav {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+}

@@ -148,6 +148,50 @@ export function photoAttribution(photo: {
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
+/** Ursprungligt filnamn från lagringsnamnet, för nedladdning. */
+export function photoOriginalFileName(fileName: string): string {
+  const withGuest = fileName.match(
+    /^\d+-[a-z0-9]+--n\.[A-Za-z0-9_-]+--(.+)$/i
+  );
+  if (withGuest?.[1]) return withGuest[1];
+  const plain = fileName.match(/^\d+-[a-z0-9]+-(.+)$/i);
+  if (plain?.[1]) return plain[1];
+  return fileName;
+}
+
+export async function downloadWeddingPhoto(photo: WeddingPhoto): Promise<void> {
+  const client = supabase;
+  let blob: Blob | null = null;
+
+  if (client) {
+    const { data, error } = await client.storage
+      .from(WEDDING_PHOTOS_BUCKET)
+      .download(photo.path);
+    if (!error && data) blob = data;
+  }
+
+  if (!blob) {
+    const res = await fetch(photo.url);
+    if (!res.ok) {
+      throw new Error("Kunde inte ladda ner bilden.");
+    }
+    blob = await res.blob();
+  }
+
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = photoOriginalFileName(photo.name);
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export function photoMatchesIdentity(
   photo: { table: PhotoTableNumber | null; fromCouple: boolean },
   identity: PhotoIdentity
