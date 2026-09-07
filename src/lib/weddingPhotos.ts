@@ -15,6 +15,7 @@ import {
   isWeddingPhotoFile,
   supabase,
 } from "./supabase";
+import { createStoreZip } from "./zipStore";
 
 export type WeddingPhoto = {
   /** Filnamn utan mapp (t.ex. `123-abc-foto.jpg`). */
@@ -148,6 +149,8 @@ export function photoAttribution(photo: {
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
+const DOWNLOAD_ALL_CONCURRENCY = 3;
+
 /** Ursprungligt filnamn från lagringsnamnet, för nedladdning. */
 export function photoOriginalFileName(fileName: string): string {
   const withGuest = fileName.match(
@@ -159,30 +162,35 @@ export function photoOriginalFileName(fileName: string): string {
   return fileName;
 }
 
-export async function downloadWeddingPhoto(photo: WeddingPhoto): Promise<void> {
-  const client = supabase;
-  let blob: Blob | null = null;
-
-  if (client) {
-    const { data, error } = await client.storage
-      .from(WEDDING_PHOTOS_BUCKET)
-      .download(photo.path);
-    if (!error && data) blob = data;
+export function uniquePhotoDownloadName(
+  fileName: string,
+  used: Set<string>
+): string {
+  const original =
+    photoOriginalFileName(fileName).replace(/[/\\]/g, "_") || "foto.jpg";
+  if (!used.has(original)) {
+    used.add(original);
+    return original;
   }
-
-  if (!blob) {
-    const res = await fetch(photo.url);
-    if (!res.ok) {
-      throw new Error("Kunde inte ladda ner bilden.");
-    }
-    blob = await res.blob();
+  const dot = original.lastIndexOf(".");
+  const base = dot > 0 ? original.slice(0, dot) : original;
+  const ext = dot > 0 ? original.slice(dot) : "";
+  let n = 2;
+  let candidate = `${base}-${n}${ext}`;
+  while (used.has(candidate)) {
+    n += 1;
+    candidate = `${base}-${n}${ext}`;
   }
+  used.add(candidate);
+  return candidate;
+}
 
+function saveBlobFile(blob: Blob, filename: string): void {
   const objectUrl = URL.createObjectURL(blob);
   try {
     const a = document.createElement("a");
     a.href = objectUrl;
-    a.download = photoOriginalFileName(photo.name);
+    a.download = filename;
     a.rel = "noopener";
     document.body.appendChild(a);
     a.click();
@@ -190,6 +198,82 @@ export async function downloadWeddingPhoto(photo: WeddingPhoto): Promise<void> {
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
+}
+
+export async function fetchWeddingPhotoBlob(
+  photo: WeddingPhoto
+): Promise<Blob> {
+  const client = supabase;
+  if (client) {
+    const { data, error } = await client.storage
+      .from(WEDDING_PHOTOS_BUCKET)
+      .download(photo.path);
+    if (!error && data) return data;
+  }
+
+  const res = await fetch(photo.url);
+  if (!res.ok) {
+    throw new Error("Kunde inte ladda ner bilden.");
+  }
+  return res.blob();
+}
+
+export async function downloadWeddingPhoto(photo: WeddingPhoto): Promise<void> {
+  const blob = await fetchWeddingPhotoBlob(photo);
+  saveBlobFile(blob, photoOriginalFileName(photo.name));
+}
+
+export async function downloadWeddingPhotosAsZip(
+  photos: WeddingPhoto[],
+  onProgress?: (done: number, total: number) => void
+): Promise<{ failed: number }> {
+  if (photos.length === 0) {
+    throw new Error("Inga bilder att ladda ner.");
+  }
+
+  const used = new Set<string>();
+  const names = photos.map((photo) => uniquePhotoDownloadName(photo.name, used));
+  const slots: (Uint8Array | null)[] = photos.map(() => null);
+  let done = 0;
+  let failed = 0;
+  let nextIndex = 0;
+
+  const worker = async () => {
+    while (true) {
+      const i = nextIndex;
+      nextIndex += 1;
+      if (i >= photos.length) return;
+      const photo = photos[i];
+      if (!photo) continue;
+      try {
+        const blob = await fetchWeddingPhotoBlob(photo);
+        slots[i] = new Uint8Array(await blob.arrayBuffer());
+      } catch (err) {
+        console.error(err);
+        failed += 1;
+      } finally {
+        done += 1;
+        onProgress?.(done, photos.length);
+      }
+    }
+  };
+
+  const workers = Math.min(DOWNLOAD_ALL_CONCURRENCY, photos.length);
+  await Promise.all(Array.from({ length: workers }, () => worker()));
+
+  const files = photos.flatMap((_, i) => {
+    const data = slots[i];
+    const name = names[i];
+    return data && name ? [{ name, data }] : [];
+  });
+
+  if (files.length === 0) {
+    throw new Error("Kunde inte ladda ner bilderna.");
+  }
+
+  const zip = createStoreZip(files);
+  saveBlobFile(zip, "broloppet-foton.zip");
+  return { failed };
 }
 
 export function photoMatchesIdentity(

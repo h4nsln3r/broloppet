@@ -28,6 +28,7 @@ import {
 import { supabase, WEDDING_PHOTOS_BUCKET } from "../../lib/supabase";
 import {
   buildPhotoFileName,
+  downloadWeddingPhotosAsZip,
   fetchPublicWeddingPhotos,
   normalizeGuestName,
   photoAttribution,
@@ -280,6 +281,13 @@ export function FotoPage() {
   );
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
   const [lightboxPath, setLightboxPath] = useState<string | null>(null);
+  const [downloadAll, setDownloadAll] = useState({
+    busy: false,
+    current: 0,
+    total: 0,
+    message: null as string | null,
+  });
+  const downloadAllLockRef = useRef(false);
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [randomOrder, setRandomOrder] = useState(false);
   const [preferNewImages, setPreferNewImages] = useState(false);
@@ -365,6 +373,70 @@ export function FotoPage() {
     },
     [images]
   );
+
+  const handleDownloadAll = useCallback(async () => {
+    if (downloadAllLockRef.current || images.length === 0) return;
+    downloadAllLockRef.current = true;
+    setDownloadAll({
+      busy: true,
+      current: 0,
+      total: images.length,
+      message: null,
+    });
+
+    const ok = window.confirm(
+      images.length === 1
+        ? "Är du säker på att du vill ladda hem bilden?"
+        : "Är du säker på att du vill ladda hem alla bilderna?"
+    );
+    if (!ok) {
+      downloadAllLockRef.current = false;
+      setDownloadAll({
+        busy: false,
+        current: 0,
+        total: 0,
+        message: null,
+      });
+      return;
+    }
+
+    const snapshot = images;
+    try {
+      const { failed } = await downloadWeddingPhotosAsZip(
+        snapshot,
+        (current, total) => {
+          setDownloadAll({
+            busy: true,
+            current,
+            total,
+            message: null,
+          });
+        }
+      );
+      downloadAllLockRef.current = false;
+      setDownloadAll({
+        busy: false,
+        current: 0,
+        total: 0,
+        message:
+          failed > 0
+            ? `Sparat. ${failed} ${failed === 1 ? "bild" : "bilder"} gick inte att hämta.`
+            : null,
+      });
+    } catch (err) {
+      console.error(err);
+      downloadAllLockRef.current = false;
+      setDownloadAll({
+        busy: false,
+        current: 0,
+        total: 0,
+        message:
+          err instanceof Error
+            ? err.message
+            : "Kunde inte ladda ner bilderna.",
+      });
+    }
+  }, [images]);
 
   const chromeVisible = controlsVisible || configOpen;
   const heartsDriveAdvance =
@@ -1249,6 +1321,32 @@ export function FotoPage() {
                   : "Inga bilder ännu."}
               </p>
             ) : (
+              <>
+                <div className="foto-gallery__toolbar">
+                  <button
+                    type="button"
+                    className="foto-gallery__download-all"
+                    onClick={handleDownloadAll}
+                    disabled={downloadAll.busy}
+                    aria-busy={downloadAll.busy}
+                  >
+                    {downloadAll.busy
+                      ? downloadAll.current === 0
+                        ? "Hämtar bilder…"
+                        : downloadAll.current >= downloadAll.total
+                          ? "Sparar zip…"
+                          : `Hämtar ${downloadAll.current} / ${downloadAll.total}…`
+                      : "Ladda hem alla bilder"}
+                  </button>
+                  {downloadAll.message && (
+                    <p
+                      className="foto-gallery__download-msg muted tiny"
+                      role="status"
+                    >
+                      {downloadAll.message}
+                    </p>
+                  )}
+                </div>
               <div className="foto-gallery__grid">
                 {images.map((img) => {
                   const color = photoSourceColor(img);
@@ -1293,6 +1391,7 @@ export function FotoPage() {
                   );
                 })}
               </div>
+              </>
             )}
           </div>
         )}
